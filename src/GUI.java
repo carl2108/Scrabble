@@ -2,6 +2,7 @@ import java.awt.EventQueue;
 
 import javax.swing.JFrame;
 import javax.swing.ImageIcon;
+import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.GroupLayout;
@@ -22,19 +23,26 @@ import javax.swing.text.StyledDocument;
 
 import java.awt.Color;
 import java.io.File;
+import java.util.Scanner;
 
 
-public class GUI {
+public class GUI implements Runnable{
 	private JFrame frame;
 	private StyledDocument doc;
 	private JLabel boardFrame, rackFrame;
 	private Image boardImage;
 	private JTextPane txtConsole;
-	private JScrollPane scroll;
+	private JScrollPane scrollPane;
+	private JScrollBar vertical;
 
+	public void run() {
+		//initialize();
+		while(true);
+	}
 	//Constructor
 	public GUI() {
 		initialize();
+		System.out.println("GUI Contructor");
 		this.frame.setVisible(true);
 	}
 
@@ -51,10 +59,11 @@ public class GUI {
 		boardFrame.setIcon(new ImageIcon(boardImage));
 		
 		txtConsole = new JTextPane();
-		txtConsole.setEditable(false);		//*Doesnt work??
+		txtConsole.setEditable(false);	
 		txtConsole.setText("Console...\n");
 		
-		scroll = new JScrollPane(txtConsole);
+		scrollPane = new JScrollPane(txtConsole);
+		vertical = scrollPane.getVerticalScrollBar();
 		
 		GroupLayout groupLayout = new GroupLayout(frame.getContentPane());
 		groupLayout.setHorizontalGroup(
@@ -64,7 +73,7 @@ public class GUI {
 					.addComponent(boardFrame, GroupLayout.PREFERRED_SIZE, 525, GroupLayout.PREFERRED_SIZE)
 					.addGap(18)
 					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
-						.addComponent(scroll)
+						.addComponent(scrollPane)
 						.addComponent(rackFrame, GroupLayout.PREFERRED_SIZE, 233, GroupLayout.PREFERRED_SIZE))
 					.addContainerGap())
 		);
@@ -74,7 +83,7 @@ public class GUI {
 					.addContainerGap()
 					.addGroup(groupLayout.createParallelGroup(Alignment.TRAILING, false)
 						.addGroup(groupLayout.createSequentialGroup()
-							.addComponent(scroll, GroupLayout.PREFERRED_SIZE, 80, GroupLayout.PREFERRED_SIZE)
+							.addComponent(scrollPane, GroupLayout.PREFERRED_SIZE, 80, GroupLayout.PREFERRED_SIZE)
 							.addPreferredGap(ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
 							.addComponent(rackFrame, GroupLayout.PREFERRED_SIZE, 37, GroupLayout.PREFERRED_SIZE))
 						.addComponent(boardFrame, Alignment.LEADING))
@@ -86,7 +95,8 @@ public class GUI {
 	public void consoleWrite(String s) {
 		doc = txtConsole.getStyledDocument();
 		try {
-			doc.insertString(doc.getLength(), s + "\n", null);
+			doc.insertString(doc.getLength(), s + "\n", null);	//Updates doc storing textConsole text
+			vertical.setValue(vertical.getMaximum());			//Scroll down as text is output to console
 		} catch (BadLocationException e) {
 			e.printStackTrace();
 		}

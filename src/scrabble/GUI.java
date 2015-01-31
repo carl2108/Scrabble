@@ -1,3 +1,4 @@
+package scrabble;
 import java.awt.EventQueue;
 
 import javax.swing.JFrame;
@@ -34,7 +35,7 @@ public class GUI implements Runnable{
 	private JTextPane txtConsole;
 	private JScrollPane scrollPane;
 	private JScrollBar vertical;
-
+ 
 	public void run() {
 		//initialize();
 		while(true);

@@ -1,30 +1,19 @@
 package scrabble;
-import java.awt.EventQueue;
 
-import javax.swing.JFrame;
-import javax.swing.ImageIcon;
-import javax.swing.JScrollBar;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.GroupLayout;
-import javax.swing.JTextPane;
-import javax.swing.GroupLayout.Alignment;
-
-import java.awt.Component;
-import java.awt.GridBagLayout;
-import java.awt.GridBagConstraints;
 import java.awt.Image;
 
-import javax.swing.JSplitPane;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
+import javax.swing.ImageIcon;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JScrollBar;
+import javax.swing.JScrollPane;
+import javax.swing.JTextPane;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
 
-import java.awt.Color;
-import java.io.File;
-import java.util.Scanner;
 
 
 public class GUI implements Runnable{

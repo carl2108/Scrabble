@@ -1,11 +1,8 @@
 package scrabble;
-import java.io.File;
+
 import java.io.FileNotFoundException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
-import java.util.Stack;
-
 
 public class Main {
 

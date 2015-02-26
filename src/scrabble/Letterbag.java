@@ -43,4 +43,12 @@ public class Letterbag {
 		return t;
 	}
 	
+	public int size(){
+		return st.size();
+	}
+	
+	public boolean hasLetters(){
+		return !st.empty();
+	}
+	
 }

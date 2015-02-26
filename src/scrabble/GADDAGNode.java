@@ -5,11 +5,11 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
 
-public class GADDAG {
+public class GADDAGNode {
 
 	public static Integer idCounter = 0;
 	private final int id;
-	GADDAG[] children;
+	GADDAGNode[] children;
 	byte[] transitions;
 	byte[] end;
 	byte numChildren = 0;
@@ -17,8 +17,8 @@ public class GADDAG {
 
 	public static Logger log = Logger.getLogger("GADDAG");
 
-	public GADDAG() {
-		children = new GADDAG[1];
+	public GADDAGNode() {
+		children = new GADDAGNode[1];
 		transitions = new byte[1];
 		end = new byte[1];
 		synchronized (idCounter) {
@@ -27,8 +27,8 @@ public class GADDAG {
 		}
 	}
 
-	public GADDAG put(char transitionChar, GADDAG node) {
-		GADDAG child = this.get(transitionChar);
+	public GADDAGNode put(char transitionChar, GADDAGNode node) {
+		GADDAGNode child = this.get(transitionChar);
 		if (child == null) {
 			children = ensureSpace(children, numChildren);
 			transitions = ensureSpace(transitions, numChildren);
@@ -41,16 +41,16 @@ public class GADDAG {
 		}
 	}
 
-	public GADDAG put(char transitionChar) {
-		return this.put(transitionChar, new GADDAG());
+	public GADDAGNode put(char transitionChar) {
+		return this.put(transitionChar, new GADDAGNode());
 	}
 
-	public GADDAG get(char transitionChar) {
+	public GADDAGNode get(char transitionChar) {
 		for (int i = 0; i < numChildren; i++) {
 			if (transitions[i] == transitionChar) {
-				log.fine("Going from node " + this.id + " to " + children[i].id
-						+ " on " + transitionChar);
-				log.fine(children[i].toString());
+//				log.fine("Going from node " + this.id + " to " + children[i].id
+//						+ " on " + transitionChar);
+//				log.fine(children[i].toString());
 				return children[i];
 			}
 		}
@@ -72,13 +72,13 @@ public class GADDAG {
 	private boolean containsRecur(String query) {
 		if (query.length() == 0) {
 			log.fine("possible prefix");
-			return false;
+			return false;		//should be true??
 		}
 		char c = query.charAt(0);
 		if (query.length() == 1 && this.hasAsEnd(c)) {
 			return true;
 		}
-		GADDAG child = this.get(c);
+		GADDAGNode child = this.get(c);
 		if (child != null) {
 			return child.containsRecur(query.substring(1));
 		}
@@ -104,7 +104,7 @@ public class GADDAG {
 		return false;
 	}
 
-	public GADDAG[] getChildren() {
+	public GADDAGNode[] getChildren() {
 		return Arrays.copyOf(children, numChildren);
 	}
 
@@ -129,8 +129,8 @@ public class GADDAG {
 
 	@Override
 	public String toString() {
-		return id + " trans:" + Arrays.toString(this.getTransitions())
-				+ " end:" + Arrays.toString(this.getEnd());
+		return "Node: " + id + "\nTrans: " + Arrays.toString(this.getTransitions())
+				+ "\nEnd: " + Arrays.toString(this.getEnd()) + "\n";
 	}
 
 	public char[] getEnd() {

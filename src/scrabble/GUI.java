@@ -26,7 +26,6 @@ public class GUI implements Runnable{
 	private JScrollBar vertical;
  
 	public void run() {
-		//initialize();
 		while(true);
 	}
 	//Constructor

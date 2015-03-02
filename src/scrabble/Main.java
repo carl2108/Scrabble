@@ -24,7 +24,11 @@ public class Main {
 		//testTraverseGADDAG();
 		//testCheckAllWords();
 		//testGUI();
-		testGUI2();
+		//testPlaceTile();
+		//testPlaceTile2();
+		//testMove();
+		testGUIRack();
+		//testTileRackImage();
 
 		System.out.println("Program Terminated");
 	}
@@ -50,26 +54,11 @@ public class Main {
 		
 	}
 	
+	//test GUI and console writing function
 	public static void testGUI(){
 		System.out.println("*****GUI Test*****\n");
 		GUI g = new GUI();
 		Scanner scan = new Scanner(System.in);
-		while(true){
-			String s = scan.nextLine();
-			g.consoleWrite(s);
-		}
-		////////////Try inputing and output through GUI console window only to get rid of focus manager messages?
-	}
-	
-	public static void testGUI2(){
-		System.out.println("*****GUI Test2*****\n");
-		//Logger globalLogger = Logger.getLogger(java.util.logging.Logger.GLOBAL_LOGGER_NAME);
-		//globalLogger.setLevel(java.util.logging.Level.OFF);
-		GUI g = new GUI();
-		Scanner scan = new Scanner(System.in);
-		GADDAG test = new GADDAG();
-		Board b = new Board();
-		Letterbag l = new Letterbag();
 		while(true){
 			String s = scan.nextLine();
 			g.consoleWrite(s);
@@ -95,9 +84,9 @@ public class Main {
 	public static void testBoard() {
 		Board b = new Board();
 		b.print();
-		
 	}
 	
+	//allows traversal of GADDAG by inputing transition letters
 	public static void testTraverseGADDAG(){
 		GADDAG test = new GADDAG();
 		GADDAGNode curr = test.getRoot();
@@ -109,17 +98,17 @@ public class Main {
 			char c = in.next().toUpperCase().charAt(0);
 			try{
 				curr = curr.get(c);
+				if(c == '@')
+					forwards = true;
+				else if(!forwards)
+					word = c + word;
+				else
+					word = word + c;
+				System.out.println("Word:\n" + word + "\n" + curr.toString());
 			}
 			catch (NullPointerException e) {
 				e.printStackTrace();
 			}
-			if(c == '@')
-				forwards = true;
-			else if(!forwards)
-				word = word + c;
-			else
-				word = c + word;
-			System.out.println("Word:\n" + word + "\n" + curr.toString());
 		}
 	}
 	
@@ -144,6 +133,49 @@ public class Main {
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public static void testGUIRack(){
+		GUI g = new GUI();
+		char[] c = {'f', 'h', 'x', 'e', 'q', 'r'};
+		g.refreshRack(c);
+	}
+	
+	public static void testPlaceTile(){
+		Board b = new Board();
+		b.print();
+		Tile t = new Tile('A', 1);
+		b.placeTile(t, 7, 7);
+		b.print();
+	}
+	
+	public static void testPlaceTile2(){
+		Board b = new Board();
+		b.print();
+		Tile t = new Tile('B', 1);
+		b.placeTile(t, b.square[7][7]);
+		b.print();
+	}
+	
+	public static void testMove(){
+		Board board = new Board();
+		board.print();
+		Move m = new Move();
+		Tile c = new Tile('C', 2);
+		Tile a = new Tile('A', 1);
+		Tile t = new Tile('T', 1);
+		m.append(c, board.square[7][7]);
+		m.append(a, board.square[8][7]);
+		m.append(t, board.square[9][7]);
+		board.placeMove(m);
+		board.print();
+	}
+	
+	public static void testTileRackImage(){
+		Tile a = new Tile('A', 1);
+		Rack r = new Rack();
+		r.add(a);
+		r.print();
 	}
 	
 }

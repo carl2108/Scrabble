@@ -45,57 +45,42 @@ public class Square {
 //	public void addLegalSet(char c) {
 //		this.getLegalSet().add(Tile.valueOf(c));
 //	}
-//
-//	public Square() {
-//		this(1, 1);
-//	}
-//
-//	public Square(int letterMultiplier, int wordMultiplier) {
-//		this(letterMultiplier, wordMultiplier, new HashSet<Tile>());
-//	}
-//
-//	public Square(int letterMultiplier, int wordMultiplier, Set<Tile> legalSet) {
-//		this(letterMultiplier, wordMultiplier, legalSet, null);
-//	}
-//
-//	public Square(int letterMultiplier, int wordMultiplier, Set<Tile> legalSet,
-//			Character tile) {
-//		super();
-//		this.letterMultiplier = letterMultiplier;
-//		this.wordMultiplier = wordMultiplier;
-//		this.legalSet = legalSet;
-//		setTile(tile);
-//		this.isAnchor = false;
-//	}
-
+	
+	//check if its an anchor square
 	public boolean isAnchor() {
 		return isAnchor;
 	}
-
+	
+	//set anchor/not
 	public void setAnchor(boolean isAnchor) {
 		this.isAnchor = isAnchor;
 	}
-
+	
+	//get tile on board square
 	public Tile getTile() {
 		return tile;
 	}
-
+	
 	public boolean hasTile() {
 		return tile != null;	//return true if tile is not equal to null?
 	}
-
-//	public void setTile(Character tile) {
-//		if (tile == null) {
-//			this.tile = null;
-//		} else {
-//			this.tile = Tile.valueOf(Character.toLowerCase(tile));
-//		}
-//	}
-
+	
+	//puts tile in board square
+	public void setTile(Tile tile) {
+		if (tile == null) {
+			this.tile = null;
+		} else {
+			this.tile = tile;
+			this.str = " " + tile.letter;
+		}
+	}
+	
+	//return board square letter multiplier
 	public int getLetterMultiplier() {
 		return letterMultiplier;
 	}
 
+	//return board square word multiplier
 	public int getWordMultiplier() {
 		return wordMultiplier;
 	}
@@ -112,7 +97,7 @@ public class Square {
 //	}
 
 	
-	//*dunno what these are for?
+	//*dunno what these are for? - check if board square is empty
 	public boolean legal(Tile t) {
 		if (legalSet.isEmpty()) {
 			return true;

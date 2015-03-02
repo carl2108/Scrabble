@@ -1,9 +1,16 @@
 package scrabble;
 
+import java.awt.Dimension;
 import java.awt.Image;
+import java.io.File;
+import java.io.IOException;
 
+import javax.imageio.ImageIO;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -15,19 +22,21 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
 
 
-
 public class GUI implements Runnable{
 	private JFrame frame;
 	private StyledDocument doc;
-	private JLabel boardFrame, rackFrame;
+	private JLabel boardFrame, rackFrame, letterMaskFrame;
 	private Image boardImage;
 	private JTextPane txtConsole;
 	private JScrollPane scrollPane;
 	private JScrollBar vertical;
+	private JLabel[] letters;
+	private JLabel[][] letterMask;
  
 	public void run() {
 		while(true);
 	}
+	
 	//Constructor
 	public GUI() {
 		initialize();
@@ -41,10 +50,17 @@ public class GUI implements Runnable{
 		frame.setBounds(0, 0, 800, 600);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
-		boardFrame = new JLabel("board");	//board JFrame container
-		rackFrame = new JLabel("rack");		//rack JFrame container
+		boardFrame = new JLabel();	//board JFrame container
+		letterMaskFrame = new JLabel();	//container for letters placed on board
+		rackFrame = new JLabel();		//rack JFrame container
+		rackFrame.setLayout(new BoxLayout(rackFrame, BoxLayout.X_AXIS));
+		letters = new JLabel[6];	//create and add 6 letter JLabel containers to be nested in the rack container
+		for(int i = 0; i<6; i++){
+			letters[i] = new JLabel();
+			rackFrame.add(letters[i]);
+		}
 		
-		boardImage = new ImageIcon("img//scrabble_board.jpg").getImage().getScaledInstance(525, 525, Image.SCALE_DEFAULT);
+		boardImage = new ImageIcon("img/scrabble_board.jpg").getImage().getScaledInstance(525, 525, Image.SCALE_DEFAULT);	
 		boardFrame.setIcon(new ImageIcon(boardImage));
 		
 		txtConsole = new JTextPane();
@@ -91,4 +107,19 @@ public class GUI implements Runnable{
 		}
 	}
 	
+	public void refreshRack(char[] rack) {
+		int i = 0;
+		for(char c: rack){
+			if(c != '_'){
+				try {
+					Image letterImage = ImageIO.read(new File("img/letters/" + Character.toString(c).toUpperCase() + ".tiff")).getScaledInstance(35, 35, Image.SCALE_DEFAULT);
+					letters[i].setIcon(new ImageIcon(letterImage));
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+			i++;
+		}
+	}
+
 }

@@ -7,6 +7,18 @@ public class Rack {
 		myRack = new Tile[6];
 	}
 	
+	/*		//should be handled by main game thread as it needs access to letterbag?
+	//draw tiles till rack is full
+	public void fill(){
+		int i=0;
+		for(i=0; i<6; i++){
+			if(myRack[i] == null){
+				
+			}
+		}
+	}
+	*/
+	
 	//Add letter to rack
 	public void add(Tile t) {
 		int i;
@@ -21,8 +33,11 @@ public class Rack {
 	
 	//Print rack contents
 	public void print() {
-		for(int i=0; i<myRack.length; i++){
-			System.out.print(myRack[i]);
+		for(Tile t: myRack){
+			if(t == null)
+				System.out.print("_");
+			else
+				System.out.print(t.letter);
 		}
 		System.out.println();
 	}

@@ -27,8 +27,12 @@ public class Main {
 		//testPlaceTile();
 		//testPlaceTile2();
 		//testMove();
-		testGUIRack();
+		//testGUIRack();
 		//testTileRackImage();
+		//testComputeMoves();
+		//testComputeMoves2();
+		//testComputeCrossSets();
+		test();
 
 		System.out.println("Program Terminated");
 	}
@@ -41,7 +45,7 @@ public class Main {
 			System.out.println("Letter: " + t.letter + " | Value: " + t.value);
 		}
 	}
-	
+	/*
 	public static void testFindWords() {
 		System.out.println("*****Find Words Test*****\n");
 		GADDAG test = new GADDAG();
@@ -53,6 +57,7 @@ public class Main {
 		System.out.println("All Words:\n" + Arrays.toString(words.toArray()));
 		
 	}
+	*/
 	
 	//test GUI and console writing function
 	public static void testGUI(){
@@ -160,15 +165,23 @@ public class Main {
 	public static void testMove(){
 		Board board = new Board();
 		board.print();
-		Move m = new Move();
+		
+		//make a move to be played
+		Move move = new Move();
 		Tile c = new Tile('C', 2);
 		Tile a = new Tile('A', 1);
 		Tile t = new Tile('T', 1);
-		m.append(c, board.square[7][7]);
-		m.append(a, board.square[8][7]);
-		m.append(t, board.square[9][7]);
-		board.placeMove(m);
-		board.print();
+		move.addPlay(c, 7, 7, board);
+		move.addPlay(a, 8, 7, board);
+		move.addPlay(t, 9, 7, board);
+		
+		System.out.println("move created");
+		
+		//place move and update anchors
+		board.placeMove(move);
+		//board.print();
+		board.computeAnchors();
+		board.printAnchors();
 	}
 	
 	public static void testTileRackImage(){
@@ -178,4 +191,104 @@ public class Main {
 		r.print();
 	}
 	
+	//computes moves with empty board - only computing vertical moves??
+	public static void testComputeMoves(){
+		GADDAG g = new GADDAG();
+		Board board = new Board();
+		Tile c = new Tile('C', 2);
+		Tile a = new Tile('A', 1);
+		Tile t = new Tile('T', 1);
+		List<Tile> rack = new ArrayList<Tile>();
+		rack.add(c);
+		rack.add(a);
+		rack.add(t);
+		rack.add(t);
+		rack.add(a);
+		//rack.print();
+		//System.out.println(rack.toString());
+		
+		board.computeAnchors();
+		board.printAnchors();
+		board.computeCrossSets(board, g.getRoot());
+		
+		//System.out.println(board.square[7][7].getLegalSet().toArray()[0].toString());
+		
+		Set<Move> moves = g.computeMoves(rack, board);
+		//List<Move> list = new ArrayList<Move>(moves);
+		//System.out.println(list.toArray().toString());
+		for(Move m: moves){
+			System.out.println("New Move-------");
+			for(Play p: m){
+				System.out.println("Tile: " + p.tile.letter + " | X: " + p.square.x + " |Y: " + p.square.y);
+			}
+		}
+	}
+
+	//computes moves with letters on the board
+	public static void testComputeMoves2(){
+		GADDAG g = new GADDAG();
+		Board board = new Board();
+		Tile c = new Tile('C', 2);
+		Tile a = new Tile('A', 1);
+		Tile t = new Tile('T', 1);
+		Tile s = new Tile('S', 2);
+		
+		board.placeTile(c, 6, 7);
+		board.placeTile(a, 7, 7);
+		board.placeTile(t, 8, 7);
+		
+		List<Tile> rack = new ArrayList<Tile>();
+		rack.add(s);
+		//rack.print();
+		//System.out.println(rack.toString());
+		
+		board.computeAnchors();
+		board.printAnchors();
+		board.print();
+		board.computeCrossSets(board, g.getRoot());
+		
+		//System.out.println(board.square[7][7].getLegalSet().toArray()[0].toString());
+		
+		Set<Move> moves = g.computeMoves(rack, board);
+		System.out.println("Moves: " + moves.size());
+		for(Move m: moves){
+			System.out.println("New Move-------");
+			for(Play p: m){
+				System.out.println("Tile: " + p.tile.letter + " | X: " + p.square.x + " |Y: " + p.square.y);
+			}
+		}
+		board.placeMove(moves.iterator().next());
+		board.computeAnchors();
+		board.printAnchors();
+		board.print();
+	}
+
+	public static void testComputeCrossSets(){
+		Board board = new Board();
+		GADDAG g = new GADDAG();
+		board.print();
+		
+		//make a move to be played
+		Tile a = new Tile('A', 1);
+		
+		
+		board.placeTile(a, 7, 7);
+		board.computeCrossSets(board, g.getRoot());
+		System.out.println("Size: " + board.get(7, 7).legalSet.size());
+		while(board.get(7, 7).legalSet.iterator().hasNext())
+			System.out.println(board.get(7, 7).legalSet.iterator().next());
+		
+	}
+	
+	public static void test(){
+		Board board = new Board();
+		GADDAG g = new GADDAG();
+		Tile x = new Tile('X', 1);
+		board.placeTile(x, 7, 7);
+		board.computeAnchors();
+		board.computeCrossSets(board, g.getRoot());
+		System.out.println(board.get(7, 8).legal('X'));
+		System.out.println(board.get(7, 7).getLegalSet().size());
+		//System.out.println(board.hasTile(7, 7));
+	}
 }

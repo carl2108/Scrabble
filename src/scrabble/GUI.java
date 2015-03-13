@@ -1,5 +1,7 @@
 package scrabble;
 
+import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.io.File;
@@ -14,6 +16,8 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JLayeredPane;
+import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
@@ -25,13 +29,15 @@ import javax.swing.text.StyledDocument;
 public class GUI implements Runnable{
 	private JFrame frame;
 	private StyledDocument doc;
-	private JLabel boardFrame, rackFrame, letterMaskFrame;
+	private JLabel boardFrame, rackFrame;
 	private Image boardImage;
 	private JTextPane txtConsole;
 	private JScrollPane scrollPane;
 	private JScrollBar vertical;
-	private JLabel[] letters;
-	private JLabel[][] letterMask;
+	private JLabel[] rackLetters;
+	
+	private JLayeredPane layeredPane;
+	private JLabel test;
  
 	public void run() {
 		while(true);
@@ -39,8 +45,8 @@ public class GUI implements Runnable{
 	
 	//Constructor
 	public GUI() {
-		initialize();
 		System.out.println("GUI Contructor");
+		initialize();
 		this.frame.setVisible(true);
 	}
 
@@ -50,18 +56,39 @@ public class GUI implements Runnable{
 		frame.setBounds(0, 0, 800, 600);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
+		layeredPane = new JLayeredPane();
+		layeredPane.setPreferredSize(new Dimension(525, 525));
+		
+//		test = new JLabel();
+//		test.setPreferredSize(new Dimension(35, 35));
+//		
+//		Image letterImage;
+//		try {
+//			letterImage = ImageIO.read(new File("img/letters/A.tiff")).getScaledInstance(35, 35, Image.SCALE_DEFAULT);
+//			test.setIcon(new ImageIcon(letterImage));
+//			layeredPane.add(test, 0);
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
+		
+		
+		
+		//board/letter mask layers
 		boardFrame = new JLabel();	//board JFrame container
-		letterMaskFrame = new JLabel();	//container for letters placed on board
+		layeredPane.add(boardFrame, 1);	//add board frame as default layer to layered pane
+		
+		//rack frame and letter JLabels
 		rackFrame = new JLabel();		//rack JFrame container
 		rackFrame.setLayout(new BoxLayout(rackFrame, BoxLayout.X_AXIS));
-		letters = new JLabel[6];	//create and add 6 letter JLabel containers to be nested in the rack container
+		rackLetters = new JLabel[6];	//create and add 6 letter JLabel containers to be nested in the rack container
 		for(int i = 0; i<6; i++){
-			letters[i] = new JLabel();
-			rackFrame.add(letters[i]);
+			rackLetters[i] = new JLabel();
+			rackFrame.add(rackLetters[i]);
 		}
 		
 		boardImage = new ImageIcon("img/scrabble_board.jpg").getImage().getScaledInstance(525, 525, Image.SCALE_DEFAULT);	
 		boardFrame.setIcon(new ImageIcon(boardImage));
+		boardFrame.setSize(525, 525);
 		
 		txtConsole = new JTextPane();
 		txtConsole.setEditable(false);	
@@ -75,7 +102,7 @@ public class GUI implements Runnable{
 			groupLayout.createParallelGroup(Alignment.LEADING)
 				.addGroup(groupLayout.createSequentialGroup()
 					.addContainerGap()
-					.addComponent(boardFrame, GroupLayout.PREFERRED_SIZE, 525, GroupLayout.PREFERRED_SIZE)
+					.addComponent(layeredPane, GroupLayout.PREFERRED_SIZE, 525, GroupLayout.PREFERRED_SIZE)
 					.addGap(18)
 					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
 						.addComponent(scrollPane)
@@ -91,12 +118,13 @@ public class GUI implements Runnable{
 							.addComponent(scrollPane, GroupLayout.PREFERRED_SIZE, 80, GroupLayout.PREFERRED_SIZE)
 							.addPreferredGap(ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
 							.addComponent(rackFrame, GroupLayout.PREFERRED_SIZE, 37, GroupLayout.PREFERRED_SIZE))
-						.addComponent(boardFrame, Alignment.LEADING))
+						.addComponent(layeredPane, Alignment.LEADING))
 					.addContainerGap(47, Short.MAX_VALUE))
 		);
 		frame.getContentPane().setLayout(groupLayout);
 	}
 	
+	//prints to GUI console
 	public void consoleWrite(String s) {
 		doc = txtConsole.getStyledDocument();
 		try {
@@ -107,13 +135,14 @@ public class GUI implements Runnable{
 		}
 	}
 	
+	//updates rack GUI given an array of letter characters
 	public void refreshRack(char[] rack) {
 		int i = 0;
 		for(char c: rack){
 			if(c != '_'){
 				try {
 					Image letterImage = ImageIO.read(new File("img/letters/" + Character.toString(c).toUpperCase() + ".tiff")).getScaledInstance(35, 35, Image.SCALE_DEFAULT);
-					letters[i].setIcon(new ImageIcon(letterImage));
+					rackLetters[i].setIcon(new ImageIcon(letterImage));
 				} catch (IOException e) {
 					e.printStackTrace();
 				}

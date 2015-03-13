@@ -7,6 +7,15 @@ public class Rack {
 		myRack = new Tile[6];
 	}
 	
+	//create filled rack
+	public Rack(Tile[] c){
+		if(c.length > 6)
+			throw new IllegalArgumentException("Array too large!");
+		for(int i=0; i<c.length; i++){
+			myRack[i] = c[i];
+		}
+	}
+	
 	/*		//should be handled by main game thread as it needs access to letterbag?
 	//draw tiles till rack is full
 	public void fill(){

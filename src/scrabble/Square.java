@@ -1,21 +1,25 @@
 package scrabble;
 
+import java.util.HashSet;
 import java.util.Set;
 
 public class Square {
 	
 	private int letterMultiplier;
 	private int wordMultiplier;
-	private Set<Tile> legalSet;	//*dunno what this is for? - possibly calculating cross sets?
+	public Set<Character> legalSet;	//*dunno what this is for? - possibly calculating cross sets?
 	private Tile tile;
 	private boolean isAnchor;
 	private String str;
+	public int x, y;
 	
-	public Square(String code) {
+	public Square(String code, int i, int j) {
 		this.str = code;
 		this.tile = null;
 		this.isAnchor = false;
-		legalSet = null;
+		this.legalSet = new HashSet<Character>();
+		this.x = i;
+		this.y = j;
 		if(code == "__"){
 			this.wordMultiplier = 1;
 			this.letterMultiplier = 1;
@@ -72,6 +76,7 @@ public class Square {
 		} else {
 			this.tile = tile;
 			this.str = " " + tile.letter;
+			this.isAnchor = false;
 		}
 	}
 	
@@ -98,19 +103,30 @@ public class Square {
 
 	
 	//*dunno what these are for? - check if board square is empty
-	public boolean legal(Tile t) {
+	public boolean legal(Character t) {
+		System.out.println(t);
 		if (legalSet.isEmpty()) {
 			return true;
 		}
 		return legalSet.contains(t);
 	}
 
-	public Set<Tile> getLegalSet() {
+	public Set<Character> getLegalSet() {
 		return legalSet;
 	}
 
-	public void setLegalSet(Set<Tile> legalSet) {
+	public void setLegalSet(Set<Character> legalSet) {
 		this.legalSet = legalSet;
+	}
+	
+	public void addAllToLegal(Set<Character> endSet) {
+		for (Character t : endSet) {
+			legalSet.add(t);
+		}
+	}
+
+	public void addLegalSet(Character t) {
+		this.getLegalSet().add(t);
 	}
 
 	public String getCode() {

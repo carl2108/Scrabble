@@ -2,7 +2,9 @@ package scrabble;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
 
@@ -10,6 +12,11 @@ public class Board {
 	
 	Square[][] square;
 	File f = new File("text//scrabbleBoard.txt");
+	
+	public static final int width = 15;
+	public static final int height = 15;
+	
+	boolean flip = false;
 	
 	//Constructor
 	public Board() {
@@ -19,7 +26,7 @@ public class Board {
 			Scanner scan = new Scanner(f).useDelimiter(" |\n");
 			for(int j=0; j<15; j++){
 				for(int i=0; i<15; i++){
-					square[i][j] = new Square(scan.next());
+					square[i][j] = new Square(scan.next(), i, j);
 				}
 			}
 			
@@ -48,8 +55,157 @@ public class Board {
 	
 	public void placeMove(Move m){
 		int i;
-		for(i=0; i<m.tiles.size(); i++){
-			m.squares.get(i).setTile(m.tiles.get(i));	//set each tile in each corresponding square position
+		List<Play> list = new ArrayList<Play>(m.plays);
+		for(i=0; i<list.size(); i++){
+			list.get(i).square.setTile(list.get(i).tile);	//set each tile in each corresponding square position
+		}
+	}
+	
+	public void computeAnchors() {
+		for (int i = 0; i < 15; i++) {
+			for (int j = 0; j < 15; j++) {
+				this.get(i, j).setAnchor(isValidAnchor(i, j));
+			}
+		}
+	}
+	
+	public Square get(int i, int j) {
+		if(flip) {
+			return square[i][j];
+		} else {
+			return square[j][i];
+		}
+	}
+	
+	public Character getTile(int i, int j) {
+		if (flip) {
+			return square[i][j].getTile().letter;
+		} else {
+			return square[j][i].getTile().letter;
+		}
+	}
+
+	private boolean isValidAnchor(int i, int j) {
+		if (!this.hasTile(i, j)) {
+			if (i == 15 / 2 && j == 15 / 2) {
+				return true;
+			}
+			if (hasTile(i - 1, j) || hasTile(i + 1, j) || hasTile(i, j + 1)
+					|| hasTile(i, j - 1)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public boolean hasTile(int i, int j) {
+		try {
+			if (flip) {
+				return square[i][j].hasTile();
+			} else {
+				return square[j][i].hasTile();
+			}
+		} catch (ArrayIndexOutOfBoundsException e) {
+			return false;
+		}
+	}
+	
+	public void printAnchors(){
+		System.out.print("   ");
+		for(int x=1; x<16; x++)
+			System.out.print(" " + x);
+		System.out.println();
+		
+		for(int j=0; j<15; j++){
+			String temp = Integer.toString(j+1);
+			if(temp.length() < 2)
+				temp = " " + temp;
+			System.out.print(temp + "|");
+			
+			for(int i=0; i<15; i++){
+				if(square[i][j].isAnchor())
+					System.out.print(" 1");
+				else
+					System.out.print(" 0");
+			}
+			System.out.println();
+		}
+		System.out.println();
+	}
+	
+	//////**********************************************
+	
+	public void computeCrossSets(Board board, GADDAGNode g) {
+		for (int j = 0; j < Board.height; j++) {
+			for (int i = Board.width - 1; i >= 0; i--) {	//why this way?
+			//for(int i=0; i<Board.width; i++){
+				if (!board.hasTile(i, j)) {
+					board.get(i, j).getLegalSet().clear();
+					computeCrossSet(i, j, g);
+				}
+			}
+		}
+	}
+
+	private void computeCrossSet(int i, int j, GADDAGNode root) {
+		GADDAGNode current = root;
+		if (hasTile(i - 1, j) && hasTile(i + 1, j)) {
+			int x = i - 1;
+			while (hasTile(x, j)) {
+				current = current.get(getTile(x, j));
+				if (current == null) {
+					return;
+				}
+				x--;
+			}
+			current = current.get('@');
+			if (current != null) {
+				GADDAGNode base = current;
+				for (char c : CharIterator.iter()) {
+					current = base;
+					current = current.get(c);
+					x = i + 1;
+					while (current != null && hasTile(x + 1, j)) {
+						current = current.get(getTile(x, j));
+						x++;
+					}
+					if (current != null) {
+						if (current.hasAsEnd(getTile(x, j))) {
+							get(i, j).addLegalSet(c);
+							System.out.println("Adding " + c);
+						}
+					}
+				}
+			}
+
+		} else if (hasTile(i - 1, j)) {
+			int x = i - 1;
+			while (hasTile(x, j)) {
+				current = current.get(getTile(x, j));
+				if (current == null) {
+					return;
+				}
+				x--;
+			}
+			current = current.get('@');
+			if (current != null) {
+				get(i, j).addAllToLegal(current.getEndSet());
+			}
+
+		} else if (hasTile(i + 1, j)) {
+			int x = i + 1;
+			while (hasTile(x + 1, j)) {
+				x++;
+			}
+			while (x > i) {
+				current = current.get(getTile(x, j));
+				if (current == null) {
+					return;
+				}
+				x--;
+			}
+			get(i, j).addAllToLegal(current.getEndSet());
+			System.out.println("Added!");
 		}
 	}
 	

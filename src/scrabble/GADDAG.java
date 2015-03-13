@@ -13,6 +13,8 @@ import java.util.logging.Logger;
 
 public class GADDAG {
 	
+	public Logger log = Logger.getLogger("GADDAG");
+	
 	GADDAGNode rootMin;
 	long buildtime;
 
@@ -116,7 +118,7 @@ public class GADDAG {
 		  return rootMin;
 	  }
 	  
-	  
+	 /* 
 	  public Set<String> findWords(GADDAGNode root, List<Character> letters) {
 			//System.out.println("Letters:   " + Arrays.toString(letters.toArray()) + "  Node:   " + root.getID());
 		    Set<String> words = new HashSet<String>();
@@ -162,8 +164,6 @@ public class GADDAG {
 		    	System.out.println("Child");
 		    	
 		    	List<Character> newList = new ArrayList<Character>(letters);
-		    	//newList.removeAll(Arrays.asList(l));	//.remove(l) returns out of bounds exception??
-		    	//newList.remove((char) l);
 		    	if(l != '@')
 		    		newList.remove(newList.indexOf(l));
 		    	
@@ -184,5 +184,209 @@ public class GADDAG {
 		    System.out.println("Words Returned:\n" + Arrays.toString(words.toArray()));
 			return words;
 		}
+	*/	
+		//////////****************************************************************
+		
+		public Set<Move> computeMoves(List<Tile> rack, Board board) {
+			Set<Move> output = new HashSet<Move>();
+			for (int j = 0; j < Board.height; j++) {
+				for (int i = 0; i < Board.width; i++) {
+					if (board.get(i, j).isAnchor()) {
+						GADDAGNode current = this.getRoot();
+						genMoves(0, i, j, output, new Move(), new ArrayList<Tile>(
+								rack), current, false, board);
+					}
+				}
+			}
+			return output;
+		}
+
+		private void genMoves(int offset, int anchori, int anchorj,
+				Set<Move> output, Move inMove, ArrayList<Tile> rack, GADDAGNode base,
+				boolean offOfReverse, Board board) {
+
+			//if current square is not on the board return
+			if (anchorj + offset >= Board.height || anchorj + offset < 0) {
+				return;
+			}
+			
+			//if there is a tile already placed in the next position
+			if (board.hasTile(anchori, anchorj + offset)) {
+				Tile t = board.get(anchori, anchorj + offset).getTile();
+				Character l = t.letter;
+				Move move = new Move(inMove);
+				GADDAGNode current;
+				//if we are making prefix go to root node?? - why?
+				if (offOfReverse) {
+					current = base;
+				} else {
+					current = base.get(l);
+				}
+				goOn(offset, anchori, anchorj, t, output, move, rack, current,
+						offOfReverse, board);
+				//else if we still have tiles on our rack
+			} else if (!rack.isEmpty()) {
+				//for each tile in the rack
+				for (Tile tile : rack) {
+					//if the tile isnt blank and is a legal tile in the next space
+					if (tile.letter != '*' && board.get(anchori, anchorj + offset).legal(tile.letter)) {
+						log.fine("Trying out " + tile + " at " + anchori + ":"
+								+ (anchorj + offset));
+						ArrayList<Tile> newRack = new ArrayList<Tile>(rack);
+						newRack.remove(tile);
+						Move move = new Move(inMove);
+						GADDAGNode current;
+						if (offOfReverse) {
+							current = base;
+						} else {
+							current = base.get(tile.letter);
+						}
+						goOn(offset, anchori, anchorj, tile, output,
+								move, newRack, current, offOfReverse, board);
+					} else {
+						// implement blank tiles
+					}
+				}
+			} else {
+				log.fine("no more possibilities");
+				//System.out.println("no more possibilities");
+			}
+
+		}
+
+		private void goOn(int offset, int anchori, int anchorj, Tile tile,
+				Set<Move> output, Move move, ArrayList<Tile> rack, GADDAGNode current2,
+				boolean offOfReverse, Board board) {
+
+			if (current2 != null) {
+				if (offset <= 0) {
+					addPlay(move, tile, anchori, anchorj + offset, board);
+					if (current2.hasAsEnd(tile.letter) && !board.hasTile(anchori, anchorj + offset - 1) && !board.hasTile(anchori, anchorj + 1)) {
+						recordMove(move, output);
+					}
+					GADDAGNode current = current2;
+					log.fine("" + current);
+					log.fine("genning 1 up with move:\n " + move);
+					genMoves(offset - 1, anchori, anchorj, output, move, rack,
+							current, false, board);
+					current = current2.get('@');
+					if (current != null && !board.hasTile(anchori, anchorj + offset - 1)) {
+						log.fine("" + current);
+						log.fine("genning reverse with move:\n " + move);
+						genMoves(1, anchori, anchorj, output, move, rack, current,
+								true, board);
+					}
+
+				} else if (offset > 0) {
+					addPlay(move, tile, anchori, anchorj + offset, board);
+
+					if (current2.hasAsEnd(tile.letter)
+							&& !board.hasTile(anchori, anchorj + offset + 1)) {
+						recordMove(move, output);
+					}
+					if (offOfReverse) {
+						current2 = current2.get(tile.letter);
+						if (current2 == null) {
+							return;
+						}
+					}
+					log.fine("genning 1 down with move:\n " + move);
+					GADDAGNode current = current2;
+					log.fine("" + current);
+					genMoves(offset + 1, anchori, anchorj, output, move, rack,
+							current, false, board);
+				}
+			} else {
+				log.fine("Invalid trans");
+			}
+
+		}
+
+		private void addPlay(Move move, Tile tile, int i, int j, Board board) {
+			if(board.flip) {
+				move.addPlay(tile, j, i, board);
+			} else {
+				move.addPlay(tile, i, j, board);
+			}
+		}
+
+		private void recordMove(Move move, Set<Move> output) {
+			Move record = new Move(move);
+			output.add(record);
+			log.fine("Recorded:\n " + record + "\n");
+			//System.out.println("Recorded: " + record);
+		}
+
+//		public void computeCrossSets(Board board) {
+//			for (int j = 0; j < Board.height; j++) {
+//				for (int i = Board.width - 1; i >= 0; i--) {
+//					if (!board.hasTile(i, j)) {
+//						board.get(i, j).getLegalSet().clear();
+//						computeCrossSet(i, j, board);
+//					}
+//				}
+//			}
+//		}
+//
+//		private void computeCrossSet(int i, int j, Board board) {
+//			GADDAGNode current = this.getRoot();
+//			if (board.hasTile(i - 1, j) && board.hasTile(i + 1, j)) {
+//				int x = i - 1;
+//				while (board.hasTile(x, j)) {
+//					current = current.get(board.getTile(x, j));
+//					if (current == null) {
+//						return;
+//					}
+//					x--;
+//				}
+//				current = current.get('@');
+//				if (current != null) {
+//					GADDAGNode base = current;
+//					for (char c : CharIterator.iter()) {
+//						current = base;
+//						current = current.get(c);
+//						x = i + 1;
+//						while (current != null && board.hasTile(x + 1, j)) {
+//							current = current.get(board.getTile(x, j));
+//							x++;
+//						}
+//						if (current != null) {
+//							if (current.hasAsEnd(board.getTile(x, j))) {
+//								board.get(i, j).addLegalSet(c);
+//								System.out.println("Adding " + c);
+//							}
+//						}
+//					}
+//				}
+//
+//			} else if (board.hasTile(i - 1, j)) {
+//				int x = i - 1;
+//				while (board.hasTile(x, j)) {
+//					current = current.get(board.getTile(x, j));
+//					if (current == null) {
+//						return;
+//					}
+//					x--;
+//				}
+//				current = current.get('@');
+//				if (current != null) {
+//					board.get(i, j).addAllToLegal(current.getEndSet());
+//				}
+//
+//			} else if (board.hasTile(i + 1, j)) {
+//				int x = i + 1;
+//				while (board.hasTile(x + 1, j)) {
+//					x++;
+//				}
+//				while (x > i) {
+//					current = current.get(board.getTile(x, j));
+//					if (current == null) {
+//						return;
+//					}
+//					x--;
+//				}
+//				board.get(i, j).addAllToLegal(current.getEndSet());
+//			}
+//		}
 }
 		

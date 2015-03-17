@@ -10,7 +10,7 @@ import java.util.Set;
 
 public class Board {
 	
-	Square[][] square;
+	public Square[][] square;
 	File f = new File("text//scrabbleBoard.txt");
 	
 	public static final int width = 15;
@@ -29,7 +29,6 @@ public class Board {
 					square[i][j] = new Square(scan.next(), i, j);
 				}
 			}
-			
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
@@ -45,43 +44,53 @@ public class Board {
 		System.out.println();
 	}
 	
-	public void placeTile(Tile t, int x, int y){
-		square[x][y].setTile(t);
+	public void setFlip(boolean b) {
+		this.flip = b;
 	}
 	
-	public void placeTile(Tile t, Square s){
-		s.setTile(t);
+	public void placeLetter(char l, int x, int y){
+		square[x][y].setLetter(l);
+	}
+	
+	public void placeLetter(char l, Square s){
+		s.setLetter(l);
 	}
 	
 	public void placeMove(Move m){
-		int i;
 		List<Play> list = new ArrayList<Play>(m.plays);
-		for(i=0; i<list.size(); i++){
-			list.get(i).square.setTile(list.get(i).tile);	//set each tile in each corresponding square position
-		}
+		for(Play p : list)
+			square(p.x, p.y).setLetter(p.letter);
 	}
 	
 	public void computeAnchors() {
 		for (int i = 0; i < 15; i++) {
 			for (int j = 0; j < 15; j++) {
-				this.get(i, j).setAnchor(isValidAnchor(i, j));
+				this.square(i, j).setAnchor(isValidAnchor(i, j));
 			}
 		}
 	}
 	
-	public Square get(int i, int j) {
-		if(flip) {
+	public Square square(int i, int j) {
+		if(!flip) {
 			return square[i][j];
 		} else {
 			return square[j][i];
 		}
 	}
 	
+	public char get(int i, int j){
+		if(!flip) {
+			return square[i][j].getLetter();
+		} else {
+			return square[j][i].getLetter();
+		}
+	}
+	
 	public Character getTile(int i, int j) {
 		if (flip) {
-			return square[i][j].getTile().letter;
+			return square[i][j].letter;
 		} else {
-			return square[j][i].getTile().letter;
+			return square[j][i].letter;
 		}
 	}
 
@@ -140,7 +149,7 @@ public class Board {
 			for (int i = Board.width - 1; i >= 0; i--) {	//why this way?
 			//for(int i=0; i<Board.width; i++){
 				if (!board.hasTile(i, j)) {
-					board.get(i, j).getLegalSet().clear();
+					board.square(i, j).getLegalSet().clear();
 					computeCrossSet(i, j, g);
 				}
 			}
@@ -171,7 +180,7 @@ public class Board {
 					}
 					if (current != null) {
 						if (current.hasAsEnd(getTile(x, j))) {
-							get(i, j).addLegalSet(c);
+							square(i, j).addLegalSet(c);
 							System.out.println("Adding " + c);
 						}
 					}
@@ -188,8 +197,13 @@ public class Board {
 				x--;
 			}
 			current = current.get('@');
+			//if we can switch to making a suffix??
 			if (current != null) {
-				get(i, j).addAllToLegal(current.getEndSet());
+				square(i, j).addAllToLegal(current.getEndSet());
+				System.out.println("Added1: " + current.getEndSet().size() + " to X: " + i + " Y: " + j);
+				for(Character c: current.getEndSet()){
+					System.out.println(c.charValue());
+				}
 			}
 
 		} else if (hasTile(i + 1, j)) {
@@ -204,8 +218,11 @@ public class Board {
 				}
 				x--;
 			}
-			get(i, j).addAllToLegal(current.getEndSet());
-			System.out.println("Added!");
+			square(i, j).addAllToLegal(current.getEndSet());
+			System.out.println("Added2: " + current.getEndSet().size() + " to X: " + i + " Y: " + j);
+			for(Character c: current.getEndSet()){
+				System.out.println(c.charValue());
+			}
 		}
 	}
 	

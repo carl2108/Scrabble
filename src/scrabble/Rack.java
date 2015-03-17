@@ -1,14 +1,14 @@
 package scrabble;
 public class Rack {
-	Tile[] myRack;
+	char[] myRack;
 	
 	//Constructor
 	public Rack() {
-		myRack = new Tile[6];
+		myRack = new char[6];
 	}
 	
 	//create filled rack
-	public Rack(Tile[] c){
+	public Rack(char[] c){
 		if(c.length > 6)
 			throw new IllegalArgumentException("Array too large!");
 		for(int i=0; i<c.length; i++){
@@ -29,24 +29,24 @@ public class Rack {
 	*/
 	
 	//Add letter to rack
-	public void add(Tile t) {
+	public void add(char t) {
 		int i;
-		for(i=0; myRack[i] != null; i++);
+		for(i=0; myRack[i] != '!'; i++);
 		myRack[i] = t;
 	}
 	
 	//Remove letter at index
 	public void remove(int index) {
-		myRack[index] = null;
+		myRack[index] = '!';
 	}
 	
 	//Print rack contents
 	public void print() {
-		for(Tile t: myRack){
-			if(t == null)
+		for(char t: myRack){
+			if(t == '!')
 				System.out.print("_");
 			else
-				System.out.print(t.letter);
+				System.out.print(t);
 		}
 		System.out.println();
 	}

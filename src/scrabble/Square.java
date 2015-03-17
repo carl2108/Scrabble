@@ -12,6 +12,7 @@ public class Square {
 	private boolean isAnchor;
 	private String str;
 	public int x, y;
+	public char letter;
 	
 	public Square(String code, int i, int j) {
 		this.str = code;
@@ -20,6 +21,7 @@ public class Square {
 		this.legalSet = new HashSet<Character>();
 		this.x = i;
 		this.y = j;
+		this.letter = '!';
 		if(code == "__"){
 			this.wordMultiplier = 1;
 			this.letterMultiplier = 1;
@@ -37,6 +39,10 @@ public class Square {
 			System.out.println("true");
 		}
 		//else throw new IllegalArgumentException("Invalid Code");
+	}
+	
+	public char getLetter(){
+		return this.letter;
 	}
 
 //	public void addAllToLegal(Set<Character> endSet) {
@@ -66,18 +72,14 @@ public class Square {
 	}
 	
 	public boolean hasTile() {
-		return tile != null;	//return true if tile is not equal to null?
+		return letter != '!';	//return true if tile is not equal to null?
 	}
 	
-	//puts tile in board square
-	public void setTile(Tile tile) {
-		if (tile == null) {
-			this.tile = null;
-		} else {
-			this.tile = tile;
-			this.str = " " + tile.letter;
-			this.isAnchor = false;
-		}
+	//puts letter on board square
+	public void setLetter(char letter) {
+		this.letter = letter;
+		this.str = " " + letter;
+		this.isAnchor = false;
 	}
 	
 	//return board square letter multiplier
@@ -103,8 +105,8 @@ public class Square {
 
 	
 	//*dunno what these are for? - check if board square is empty
-	public boolean legal(Character t) {
-		System.out.println(t);
+	public boolean legal(Tile t) {
+		//System.out.println(t);
 		if (legalSet.isEmpty()) {
 			return true;
 		}

@@ -1,29 +1,8 @@
 package scrabble;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
-
-//public class Move {
-//	
-//	int score;
-//	List<Tile> tiles;
-//	List<Square> squares;
-//	
-//	public Move(){
-//		score = 0;
-//		tiles = new ArrayList<Tile>();
-//		squares = new ArrayList<Square>();
-//	}
-//	
-//	public void append(Tile t, Square s){
-//		this.tiles.add(t);
-//		this.squares.add(s);
-//	}
-//
-//}
 
 public class Move implements Iterable<Play> {
 
@@ -37,9 +16,9 @@ public class Move implements Iterable<Play> {
 	public Move(Move other) {
 		this.plays = new HashSet<Play>(other.plays);
 	}
-
-	public void addPlay(Tile c, int i, int j, Board board) {
-		plays.add(new Play(board.get(j, i), c));	//get(j, i) because of way hashSets work? Like Vindinium project?
+	
+	public void addPlay(int x, int y, char l, boolean vertical){
+		plays.add(new Play(x, y, l));
 	}
 
 	public void setScore(int score) {
@@ -54,14 +33,14 @@ public class Move implements Iterable<Play> {
 		return plays.size();
 	}
 
-	@Override
-	public String toString() {
-		StringBuilder out = new StringBuilder();
-		for (Play p : plays) {
-			out.append(p.tile.letter);// + " " + p.i + " " + p.j + "\n");
-		}
-		return out.toString();
-	}
+//	@Override
+//	public String toString() {
+//		StringBuilder out = new StringBuilder();
+//		for (Play p : plays) {
+//			out.append(p.tile.letter);// + " " + p.i + " " + p.j + "\n");
+//		}
+//		return out.toString();
+//	}
 
 	@Override
 	public Iterator<Play> iterator() {

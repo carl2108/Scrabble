@@ -8,19 +8,20 @@ import java.util.Stack;
 
 public class Letterbag {
 	
-	Stack<Tile> st;	//Stack used to represent the letter bag
+	Stack<Character> st;	//Stack used to represent the letter bag
 	
 	//Constructor
 	public Letterbag() {
-		st = new Stack<Tile>();
+		st = new Stack<Character>();
 		
 		File f = new File("text//letters.txt");		//Read letters from text file provided
 		try {
 			Scanner scan = new Scanner(f).useDelimiter(" ");
 			
 			while(scan.hasNext()) {
-				Tile t = new Tile(scan.next().charAt(0), scan.nextInt());
-				st.push(t);
+				char c = scan.next().charAt(0);
+				int throwAway = scan.nextInt();	//remove this later!
+				st.push(c);
 			}
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
@@ -28,17 +29,17 @@ public class Letterbag {
 	}
 	
 	//Pops and returns a random letter from the letter stack - *How to handle when stack is empty??
-	public Tile draw() {
+	public char draw() {
 		Random rand = new Random();
 		int r = rand.nextInt(st.size());
-		Tile t = st.get(r);
+		char c = st.get(r);
 		st.removeElementAt(r);
-		return t;
+		return c;
 	}
 	
 	//Swap tiles - *How to handle when stack is empty??
-	public Tile swap(Tile b) {
-		Tile t = draw();
+	public char swap(char b) {
+		char t = draw();
 		st.push(b);
 		return t;
 	}
@@ -50,5 +51,4 @@ public class Letterbag {
 	public boolean hasLetters(){
 		return !st.empty();
 	}
-	
 }

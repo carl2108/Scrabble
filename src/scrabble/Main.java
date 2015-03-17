@@ -24,15 +24,15 @@ public class Main {
 		//testTraverseGADDAG();
 		//testCheckAllWords();
 		//testGUI();
-		//testPlaceTile();
+		//testPlaceLetter();
 		//testPlaceTile2();
 		//testMove();
 		//testGUIRack();
 		//testTileRackImage();
 		//testComputeMoves();
-		//testComputeMoves2();
+		testComputeMoves2();
 		//testComputeCrossSets();
-		test();
+		//test();
 
 		System.out.println("Program Terminated");
 	}
@@ -41,8 +41,8 @@ public class Main {
 		System.out.println("*****Letterbag Test*****\n");
 		Letterbag l = new Letterbag();
 		while(l.hasLetters()) {
-			Tile t = l.draw();
-			System.out.println("Letter: " + t.letter + " | Value: " + t.value);
+			char t = l.draw();
+			System.out.println("Letter: " + t + " | Value: " + Tile.valueOf(t));
 		}
 	}
 	/*
@@ -146,19 +146,17 @@ public class Main {
 		g.refreshRack(c);
 	}
 	
-	public static void testPlaceTile(){
+	public static void testPlaceLetter(){
 		Board b = new Board();
 		b.print();
-		Tile t = new Tile('A', 1);
-		b.placeTile(t, 7, 7);
+		b.placeLetter('A', 7, 7);
 		b.print();
 	}
 	
 	public static void testPlaceTile2(){
 		Board b = new Board();
 		b.print();
-		Tile t = new Tile('B', 1);
-		b.placeTile(t, b.square[7][7]);
+		b.placeLetter('B', b.square[7][7]);
 		b.print();
 	}
 	
@@ -168,44 +166,35 @@ public class Main {
 		
 		//make a move to be played
 		Move move = new Move();
-		Tile c = new Tile('C', 2);
-		Tile a = new Tile('A', 1);
-		Tile t = new Tile('T', 1);
-		move.addPlay(c, 7, 7, board);
-		move.addPlay(a, 8, 7, board);
-		move.addPlay(t, 9, 7, board);
+		//move.addPlay(c, 7, 7, board);
+		//move.addPlay(a, 8, 7, board);
+		//move.addPlay(t, 9, 7, board);
 		
 		System.out.println("move created");
 		
 		//place move and update anchors
-		board.placeMove(move);
+		//board.placeMove(move);
 		//board.print();
 		board.computeAnchors();
 		board.printAnchors();
 	}
 	
 	public static void testTileRackImage(){
-		Tile a = new Tile('A', 1);
 		Rack r = new Rack();
-		r.add(a);
+		r.add('A');
 		r.print();
 	}
 	
-	//computes moves with empty board - only computing vertical moves??
+	//computes moves with empty board
 	public static void testComputeMoves(){
 		GADDAG g = new GADDAG();
 		Board board = new Board();
-		Tile c = new Tile('C', 2);
-		Tile a = new Tile('A', 1);
-		Tile t = new Tile('T', 1);
-		List<Tile> rack = new ArrayList<Tile>();
-		rack.add(c);
-		rack.add(a);
-		rack.add(t);
-		rack.add(t);
-		rack.add(a);
-		//rack.print();
-		//System.out.println(rack.toString());
+		//Rack rack = new Rack();
+		ArrayList<Tile> rack = new ArrayList<Tile>();
+		rack.add(Tile.valueOf('C'));
+		rack.add(Tile.valueOf('A'));
+		rack.add(Tile.valueOf('T'));
+		System.out.println(rack.toString());
 		
 		board.computeAnchors();
 		board.printAnchors();
@@ -213,13 +202,14 @@ public class Main {
 		
 		//System.out.println(board.square[7][7].getLegalSet().toArray()[0].toString());
 		
-		Set<Move> moves = g.computeMoves(rack, board);
+		Set<Move> moves = g.findWords(g.getRoot(), rack, board);
+		//board.setFlip(true);
 		//List<Move> list = new ArrayList<Move>(moves);
 		//System.out.println(list.toArray().toString());
 		for(Move m: moves){
 			System.out.println("New Move-------");
 			for(Play p: m){
-				System.out.println("Tile: " + p.tile.letter + " | X: " + p.square.x + " |Y: " + p.square.y);
+				System.out.println("Tile: " + p.letter + " | X: " + p.x + " |Y: " + p.y);
 			}
 		}
 	}
@@ -228,17 +218,13 @@ public class Main {
 	public static void testComputeMoves2(){
 		GADDAG g = new GADDAG();
 		Board board = new Board();
-		Tile c = new Tile('C', 2);
-		Tile a = new Tile('A', 1);
-		Tile t = new Tile('T', 1);
-		Tile s = new Tile('S', 2);
+
+		board.placeLetter('C', 6, 7);
+		board.placeLetter('A', 7, 7);
+		board.placeLetter('T', 8, 7);
 		
-		board.placeTile(c, 6, 7);
-		board.placeTile(a, 7, 7);
-		board.placeTile(t, 8, 7);
-		
-		List<Tile> rack = new ArrayList<Tile>();
-		rack.add(s);
+		ArrayList<Tile> rack = new ArrayList<Tile>();
+		rack.add(Tile.valueOf('S'));
 		//rack.print();
 		//System.out.println(rack.toString());
 		
@@ -249,12 +235,12 @@ public class Main {
 		
 		//System.out.println(board.square[7][7].getLegalSet().toArray()[0].toString());
 		
-		Set<Move> moves = g.computeMoves(rack, board);
+		Set<Move> moves = g.findWords(g.getRoot(), rack, board);
 		System.out.println("Moves: " + moves.size());
 		for(Move m: moves){
 			System.out.println("New Move-------");
 			for(Play p: m){
-				System.out.println("Tile: " + p.tile.letter + " | X: " + p.square.x + " |Y: " + p.square.y);
+				System.out.println("Tile: " + p.letter + " | X: " + p.x + " |Y: " + p.y);
 			}
 		}
 		board.placeMove(moves.iterator().next());
@@ -267,28 +253,21 @@ public class Main {
 		Board board = new Board();
 		GADDAG g = new GADDAG();
 		board.print();
-		
-		//make a move to be played
-		Tile a = new Tile('A', 1);
-		
-		
-		board.placeTile(a, 7, 7);
+		board.placeLetter('A', 7, 7);
 		board.computeCrossSets(board, g.getRoot());
-		System.out.println("Size: " + board.get(7, 7).legalSet.size());
-		while(board.get(7, 7).legalSet.iterator().hasNext())
-			System.out.println(board.get(7, 7).legalSet.iterator().next());
-		
+		System.out.println("Size: " + board.square(7, 7).legalSet.size());
+		while(board.square(7, 7).legalSet.iterator().hasNext())
+			System.out.println(board.square(7, 7).legalSet.iterator().next());
 	}
 	
 	public static void test(){
 		Board board = new Board();
 		GADDAG g = new GADDAG();
-		Tile x = new Tile('X', 1);
-		board.placeTile(x, 7, 7);
-		board.computeAnchors();
-		board.computeCrossSets(board, g.getRoot());
-		System.out.println(board.get(7, 8).legal('X'));
-		System.out.println(board.get(7, 7).getLegalSet().size());
-		//System.out.println(board.hasTile(7, 7));
+		List<Character> rack = new ArrayList<Character>();
+		rack.add('A');
+		rack.add('C');
+		rack.add('T');
+		rack.add('S');
+		
 	}
 }

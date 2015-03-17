@@ -1,12 +1,13 @@
 package scrabble;
 
 public class Play {
-	public final Tile tile;
-	public final Square square;
-
-	public Play(Square s, Tile tile) {
-		this.square = s;
-		this.tile = tile;
+	public int x, y;
+	public char letter;
+	
+	public Play(int x, int y, char l){
+		this.x = x;
+		this.y = y;
+		this.letter = l;
 	}
 
 //	@Override

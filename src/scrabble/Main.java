@@ -220,8 +220,8 @@ public class Main {
 		Board board = new Board();
 
 		//board.placeLetter('C', 6, 7);
+		//board.placeLetter('N', 7, 7);
 		board.placeLetter('T', 7, 7);
-		//board.placeLetter('T', 8, 7);
 		
 		ArrayList<Tile> rack = new ArrayList<Tile>();
 		//rack.add(Tile.valueOf('S'));

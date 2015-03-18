@@ -17,7 +17,7 @@ public class GADDAG {
 		buildtime = System.currentTimeMillis();
 		rootMin = null;
 
-		File file = new File("text//OSPD.txt");
+		File file = new File("text//cat.txt");
 		try {
 			rootMin = buildGADDAG(new Scanner(file));
 		} catch (FileNotFoundException e) {
@@ -173,7 +173,7 @@ public class GADDAG {
 			for(int i=0; i<Board.width; i++){
 				if(board.square(i, j).isAnchor()){	//if square is an anchor + *hasnt been used in prev gen
 					findHorizontal(0, i, j, new Move(), rack, root, board, moves);
-					findVertical(0, i, j, new Move(), rack, root, board, moves);
+					//findVertical(0, i, j, new Move(), rack, root, board, moves);
 				}
 			}
 		}
@@ -217,7 +217,7 @@ public class GADDAG {
 
 		if(offset <= 0){	//if making prefix
 			//if its a valid move ending record it
-			if(currNode.hasAsEnd(letter) && board.square(anchorx + offset, anchory).legal(letter) && !board.square(anchorx + offset, anchory).hasTile()/*needed?*/){
+			if(currNode.hasAsEnd(letter) && board.square(anchorx + offset, anchory).legal(letter)/* && !board.square(anchorx + offset, anchory).hasTile()needed?*/){
 				recordMove(inMove, moves);
 				System.out.println("Move found!");
 			}
@@ -225,15 +225,17 @@ public class GADDAG {
 			findHorizontal(offset - 1, anchorx, anchory, inMove, rack, nextNode, board, moves);
 
 			//if we can start making suffixes do so
-			currNode = currNode.get('@');
-			if(currNode != null){
-				findHorizontal(1, anchorx, anchory, inMove, rack, currNode, board, moves);
-				System.out.println("Delimiter: @");
+			if(nextNode != null){
+			currNode = nextNode.get('@');
+				if(currNode != null){
+					findHorizontal(1, anchorx, anchory, inMove, rack, currNode, board, moves);
+					System.out.println("Delimiter: @");
+				}
 			}
 		}
 		else if(offset > 0){	//else if making suffix
 			//if its a valid move ending record it
-			if(currNode.hasAsEnd(letter) && board.square(anchorx + offset, anchory).legal(letter) && !board.square(anchorx + offset, anchory).hasTile()){
+			if(currNode.hasAsEnd(letter) && board.square(anchorx + offset, anchory).legal(letter) /*&& !board.square(anchorx + offset, anchory).hasTile()*/){
 				recordMove(inMove, moves);
 				System.out.println("Move found!");
 			}

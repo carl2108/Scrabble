@@ -94,6 +94,10 @@ public class GADDAGNode {
 	public boolean hasAsEnd(char endChar) {
 		return contains(end, endChar);
 	}
+	
+	public boolean hasAsTrans(char endChar) {
+		return contains(transitions, endChar);
+	}
 
 	private boolean contains(byte[] array, char endChar) {
 		byte endByte = (byte) endChar;

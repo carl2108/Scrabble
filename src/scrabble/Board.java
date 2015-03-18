@@ -141,7 +141,7 @@ public class Board {
 	//////**********************************************
 	
 	public void printNumCrossSets(Board board){
-		System.out.print("   ");
+		System.out.print("Horizontal\n   ");
 		for(int x=0; x<15; x++)
 			System.out.print(" " + x);
 		System.out.println();
@@ -153,7 +153,25 @@ public class Board {
 			System.out.print(temp + "|");
 			
 			for(int i=0; i<15; i++){
-				System.out.print(" " + board.square(i, j).getLegalSet().size());
+				System.out.print(" " + board.square(i, j).getLegalHorizontalSet().size());
+			}
+			System.out.println();
+		}
+		System.out.println();
+		
+		System.out.print("Vertical\n   ");
+		for(int x=0; x<15; x++)
+			System.out.print(" " + x);
+		System.out.println();
+		
+		for(int j=0; j<15; j++){
+			String temp = Integer.toString(j);
+			if(temp.length() < 2)
+				temp = " " + temp;
+			System.out.print(temp + "|");
+			
+			for(int i=0; i<15; i++){
+				System.out.print(" " + board.square(i, j).getLegalVerticalSet().size());
 			}
 			System.out.println();
 		}
@@ -164,11 +182,13 @@ public class Board {
 		for(int j = 0; j < Board.height; j++) {
 			//for (int i = Board.width - 1; i >= 0; i--) {	//why this way?
 			for(int i=0; i<Board.width; i++){
-				if(!board.hasTile(i, j)) {		//*if board position is an anchor??
+				if(/*!board.hasTile(i, j)*/ board.isValidAnchor(i, j)) {		//*if board position is an anchor??
 					//System.out.println("X: " + i + " Y: " + j);
-					board.square(i, j).getLegalSet().clear();
+					board.square(i, j).getLegalHorizontalSet().clear();
 					computeHorizontalCrossSet(i, j, g);
-					//computeVerticalCrossSet(i, j, g);
+					board.square(i, j).getLegalVerticalSet().clear();
+					computeVerticalCrossSet(i, j, g);
+					board.square(i, j).printLegalHorizontalSet();
 				}
 			}
 		}
@@ -209,7 +229,7 @@ public class Board {
 					}
 					//if (current != null) {		//why is current == null??
 						if (current.hasAsEnd(getTile(x - 1, j))) {
-							square(i, j).addLegalSet(c);
+							square(i, j).addLegalHorizontalSet(c);
 							System.out.println("Adding " + c);
 						}
 					//}
@@ -231,12 +251,8 @@ public class Board {
 			if (current != null) {
 				//square(i, j).addAllToLegal(current.getTransitionSet());
 				//square(i, j).addAllToLegal(current.getEndSet());
-				Set<Character> temp = current.getEndSet();
-				System.out.println("Hello - End: " + temp.size() + " Trans: " + current.getTransitionSet().size());
-				temp.addAll(current.getTransitionSet());
-				temp.remove('@');
-				square(i, j).addAllToLegal(temp);
-				System.out.println("Added1: " + temp.size() + " to X: " + i + " Y: " + j);
+				square(i, j).addAllToLegalHorizontal(current.getEndSet());
+				System.out.println("Added1: " + current.getEndSet().size() + " to X: " + i + " Y: " + j);
 //				for(Character c: current.getEndSet()){
 //					System.out.println(c.charValue());
 //				}
@@ -256,20 +272,13 @@ public class Board {
 				}
 				x--;
 			}
-			Set<Character> temp = current.getEndSet();
-			//System.out.println("End: " + temp.size() + " Trans: " + current.getTransitionSet().size());
-			temp.addAll(current.getTransitionSet());
-			temp.remove('@');
-			for(Character c : temp){
-				System.out.print(c);
+			
+			square(i, j).addAllToLegalHorizontal(current.getEndSet());
+			System.out.println("\nAdded2: " + current.getEndSet().size() + " to X: " + i + " Y: " + j);
+			for(Character c: current.getEndSet()){
+				System.out.print(c.charValue());
 			}
-			square(i, j).addAllToLegal(temp);
-			System.out.println("\nAdded2: " + temp.size() + " to X: " + i + " Y: " + j);
-//			for(Character c: current.getEndSet()){
-//				System.out.println(c.charValue());
-//			}
 		}
-		//System.out.println("Done!");
 	}
 	
 	private void computeVerticalCrossSet(int i, int j, GADDAGNode root) {
@@ -299,7 +308,7 @@ public class Board {
 					}
 					if (current != null) {
 						if (current.hasAsEnd(getTile(i, y))) {
-							square(i, j).addLegalSet(c);
+							square(i, j).addLegalVerticalSet(c);
 							//System.out.println("Adding " + c);
 						}
 					}
@@ -319,7 +328,7 @@ public class Board {
 			current = current.get('@');
 			//if we can switch to making a suffix??
 			if (current != null) {
-				square(i, j).addAllToLegal(current.getEndSet());
+				square(i, j).addAllToLegalVertical(current.getEndSet());
 //				System.out.println("Added1: " + current.getEndSet().size() + " to X: " + i + " Y: " + j);
 //				for(Character c: current.getEndSet()){
 //					System.out.println(c.charValue());
@@ -339,7 +348,7 @@ public class Board {
 				}
 				y--;
 			}
-			square(i, j).addAllToLegal(current.getEndSet());
+			square(i, j).addAllToLegalVertical(current.getEndSet());
 //			System.out.println("Added2: " + current.getEndSet().size() + " to X: " + i + " Y: " + j);
 //			for(Character c: current.getEndSet()){
 //				System.out.println(c.charValue());

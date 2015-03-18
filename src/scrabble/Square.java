@@ -7,14 +7,15 @@ public class Square {
 	
 	private int letterMultiplier;
 	private int wordMultiplier;
-	public Set<Character> legalSet;
+	public Set<Character> legalHorizontalSet, legalVerticalSet;
 	private boolean isAnchor;
 	public int x, y;
 	public char letter;
 	
 	public Square(String code, int i, int j) {
 		this.isAnchor = false;
-		this.legalSet = new HashSet<Character>();
+		this.legalHorizontalSet = new HashSet<Character>();
+		this.legalVerticalSet = new HashSet<Character>();
 		this.x = i;
 		this.y = j;
 		this.letter = '!';
@@ -67,33 +68,67 @@ public class Square {
 		return wordMultiplier;
 	}
 
-	public boolean legal(Character c) {
-		if(legalSet.isEmpty()) {		//*what if no letters can be legally placed here??
+	public boolean legalHorizontal(Character c) {
+		if(legalHorizontalSet.isEmpty()) {		//*what if no letters can be legally placed here??
 			return true;
 		}
-		return legalSet.contains(c); //return legalSet.contains(Tile.valueOf(c)); - *was this
-	}
-
-	public Set<Character> getLegalSet() {
-		return legalSet;
-	}
-
-	public void setLegalSet(Set<Character> legalSet) {
-		this.legalSet = legalSet;
+		return legalHorizontalSet.contains(c); //return legalSet.contains(Tile.valueOf(c)); - *was this
 	}
 	
-	public void addAllToLegal(Set<Character> endSet) {
+	public boolean legalVertical(Character c) {
+		if(legalVerticalSet.isEmpty()) {		//*what if no letters can be legally placed here??
+			return true;
+		}
+		return legalVerticalSet.contains(c); //return legalSet.contains(Tile.valueOf(c)); - *was this
+	}
+
+	public Set<Character> getLegalHorizontalSet() {
+		return legalHorizontalSet;
+	}
+	
+	public Set<Character> getLegalVerticalSet() {
+		return legalVerticalSet;
+	}
+
+	public void setLegalHorizontalSet(Set<Character> legalSet) {
+		this.legalHorizontalSet = legalSet;
+	}
+	
+	public void setLegalVerticalSet(Set<Character> legalSet) {
+		this.legalVerticalSet = legalSet;
+	}
+	
+	public void addAllToLegalHorizontal(Set<Character> endSet) {
 		for (Character t : endSet) {
-			legalSet.add(t);
+			legalHorizontalSet.add(t);
+		}
+	}
+	
+	public void addAllToLegalVertical(Set<Character> endSet) {
+		for (Character t : endSet) {
+			legalVerticalSet.add(t);
 		}
 	}
 
-	public void addLegalSet(char t) {
-		this.getLegalSet().add(t);
+	public void addLegalHorizontalSet(char t) {
+		this.getLegalHorizontalSet().add(t);
 	}
 	
-	public void printLegalSet(){
-		for(char c : legalSet){
+	public void addLegalVerticalSet(char t) {
+		this.getLegalVerticalSet().add(t);
+	}
+	
+	public void printLegalHorizontalSet(){
+		System.out.println("Legal Horizontal Set: ");
+		for(char c : legalHorizontalSet){
+			System.out.print(c);
+		}
+		System.out.println();
+	}
+	
+	public void printLegalVerticalSet(){
+		System.out.println("Legal Vertical Set: ");
+		for(char c : legalVerticalSet){
 			System.out.print(c);
 		}
 		System.out.println();

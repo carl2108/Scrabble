@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
@@ -29,8 +30,8 @@ public class Main {
 		//testMove();
 		//testGUIRack();
 		//testTileRackImage();
-		//testComputeMoves();
-		testComputeMoves2();
+		testComputeMoves();
+		//testComputeMoves2();
 		//testComputeCrossSets();
 		//testComputeCrossSets2();
 		//testComputeCrossSets3();
@@ -193,7 +194,7 @@ public class Main {
 		Board board = new Board();
 		//Rack rack = new Rack();
 		ArrayList<Tile> rack = new ArrayList<Tile>();
-		rack.add(Tile.valueOf('C'));
+		rack.add(Tile.valueOf('R'));
 		rack.add(Tile.valueOf('A'));
 		rack.add(Tile.valueOf('T'));
 		System.out.println(rack.toString());
@@ -206,6 +207,7 @@ public class Main {
 		
 		
 		Set<Move> moves = g.findWords(g.getRoot(), rack, board);
+		System.out.println("Moves!");
 		for(Move m: moves){
 			System.out.println("New Move-------");
 			for(Play p: m){
@@ -239,7 +241,7 @@ public class Main {
 		System.out.println("Cross Set Numbers:");
 		board.printNumCrossSets(board);
 		
-		board.square(7, 8).printLegalSet();
+		//board.square(7, 8).printLegalSet();
 		
 		//System.out.println(board.square[7][7].getLegalSet().toArray()[0].toString());
 		
@@ -257,49 +259,49 @@ public class Main {
 //		board.print();
 	}
 
-	public static void testComputeCrossSets(){
-		Board board = new Board();
-		GADDAG g = new GADDAG();
-		board.placeLetter('A', 7, 7);
-		board.print();
-		board.computeCrossSets(board, g.getRoot());
-		System.out.println("Size: " + board.square(8, 7).legalSet.size());
-		System.out.println("Size: " + board.square(7, 8).legalSet.size());
-		board.printNumCrossSets(board);
-		while(board.square(7, 7).legalSet.iterator().hasNext())
-			System.out.println(board.square(7, 7).getLegalSet().iterator().next());
-	}
+//	public static void testComputeCrossSets(){
+//		Board board = new Board();
+//		GADDAG g = new GADDAG();
+//		board.placeLetter('A', 7, 7);
+//		board.print();
+//		board.computeCrossSets(board, g.getRoot());
+//		System.out.println("Size: " + board.square(8, 7).legalSet.size());
+//		System.out.println("Size: " + board.square(7, 8).legalSet.size());
+//		board.printNumCrossSets(board);
+//		while(board.square(7, 7).legalSet.iterator().hasNext())
+//			System.out.println(board.square(7, 7).getLegalSet().iterator().next());
+//	}
 	
 	//tests PA_ABLE for Y and R, tiles either side
-	public static void testComputeCrossSets2(){
-		Board board = new Board();
-		GADDAG g = new GADDAG();
-		board.placeLetter('A', 6, 7);
-		board.placeLetter('P', 5, 7);
-		board.placeLetter('A', 8, 7);
-		board.placeLetter('B', 9, 7);
-		board.placeLetter('L', 10, 7);
-		board.placeLetter('E', 11, 7);
-		board.print();
-		board.computeCrossSets(board, g.getRoot());
-		System.out.println("Size: " + board.square(8, 7).legalSet.size());
-		System.out.println("Size: " + board.square(7, 8).legalSet.size());
-		board.printNumCrossSets(board);
-	}
+//	public static void testComputeCrossSets2(){
+//		Board board = new Board();
+//		GADDAG g = new GADDAG();
+//		board.placeLetter('A', 6, 7);
+//		board.placeLetter('P', 5, 7);
+//		board.placeLetter('A', 8, 7);
+//		board.placeLetter('B', 9, 7);
+//		board.placeLetter('L', 10, 7);
+//		board.placeLetter('E', 11, 7);
+//		board.print();
+//		board.computeCrossSets(board, g.getRoot());
+//		System.out.println("Size: " + board.square(8, 7).legalSet.size());
+//		System.out.println("Size: " + board.square(7, 8).legalSet.size());
+//		board.printNumCrossSets(board);
+//	}
 	
-	public static void testComputeCrossSets3(){
-		Board board = new Board();
-		GADDAG g = new GADDAG();
-		//board.placeLetter('A', 6, 7);
-		board.placeLetter('C', 7, 7);
-		//board.placeLetter('T', 7, 7);	//then without T
-		
-		board.print();
-		board.computeCrossSets(board, g.getRoot());
-		System.out.println("Size: " + board.square(8, 7).legalSet.size());
-		System.out.println("Size: " + board.square(7, 8).legalSet.size());
-		board.printNumCrossSets(board);
-	}
+//	public static void testComputeCrossSets3(){
+//		Board board = new Board();
+//		GADDAG g = new GADDAG();
+//		//board.placeLetter('A', 6, 7);
+//		board.placeLetter('C', 7, 7);
+//		//board.placeLetter('T', 7, 7);	//then without T
+//		
+//		board.print();
+//		board.computeCrossSets(board, g.getRoot());
+//		System.out.println("Size: " + board.square(8, 7).legalSet.size());
+//		System.out.println("Size: " + board.square(7, 8).legalSet.size());
+//		board.printNumCrossSets(board);
+//	}
 	public static void test(){
 		Board board = new Board();
 		GADDAG g = new GADDAG();

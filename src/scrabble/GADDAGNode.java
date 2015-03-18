@@ -144,6 +144,14 @@ public class GADDAGNode {
 		}
 		return endSet;
 	}
+	
+	public Set<Character> getTransitionSet() {
+		Set<Character> transitionSet = new HashSet<Character>();
+		for (char c : charsFromBytes(transitions)) {
+			transitionSet.add(c);
+		}
+		return transitionSet;
+	}
 
 	private char[] charsFromBytes(byte[] bytes) {
 		char[] out = new char[bytes.length];

@@ -181,6 +181,8 @@ public class GADDAG {
 	}
 
 	public void findHorizontal(int offset, int anchorx, int anchory, Move inMove, ArrayList<Tile> rack, GADDAGNode currNode, Board board, Set<Move> moves){
+		if(currNode == null)
+			return;
 		if(anchorx + offset >= Board.width || anchorx + offset < 0)
 			return;
 
@@ -193,7 +195,7 @@ public class GADDAG {
 		}
 		else if(!rack.isEmpty()){	//else if we still have letters we can play
 			for(Tile t : rack){	//for each letter left on the rack
-				if(t != Tile.BLANK && board.square(anchorx + offset, anchory).legal(t)){	//if not blank + is legal to play in next square
+				if(t != Tile.BLANK && board.square(anchorx + offset, anchory).legal(t.character)){	//if not blank + is legal to play in next square
 					ArrayList<Tile> newRack = new ArrayList<Tile>(rack);
 					newRack.remove(t);
 					GADDAGNode nextNode = currNode.get(t.character);		//null pointer exception here! currNode = null
@@ -215,7 +217,7 @@ public class GADDAG {
 
 		if(offset <= 0){	//if making prefix
 			//if its a valid move ending record it
-			if(currNode.hasAsEnd(letter) && board.square(anchorx + offset, anchory).legal(Tile.valueOf(letter)) && !board.square(anchorx + offset, anchory).hasTile()/*needed?*/){
+			if(currNode.hasAsEnd(letter) && board.square(anchorx + offset, anchory).legal(letter) && !board.square(anchorx + offset, anchory).hasTile()/*needed?*/){
 				recordMove(inMove, moves);
 				System.out.println("Move found!");
 			}
@@ -231,10 +233,11 @@ public class GADDAG {
 		}
 		else if(offset > 0){	//else if making suffix
 			//if its a valid move ending record it
-			if(currNode.hasAsEnd(letter) && board.square(anchorx + offset, anchory).legal(Tile.valueOf(letter)) && !board.square(anchorx + offset, anchory).hasTile()){
-				//recordMove
+			if(currNode.hasAsEnd(letter) && board.square(anchorx + offset, anchory).legal(letter) && !board.square(anchorx + offset, anchory).hasTile()){
+				recordMove(inMove, moves);
+				System.out.println("Move found!");
 			}
-			//continue tring to generate suffixes
+			//continue trying to generate suffixes
 			currNode = nextNode;
 			findHorizontal(offset + 1, anchorx, anchory, inMove, rack, currNode, board, moves);
 		}
@@ -244,6 +247,8 @@ public class GADDAG {
 
 	public void findVertical(int offset, int anchorx, int anchory, Move inMove, ArrayList<Tile> rack, GADDAGNode currNode, Board board, Set<Move> moves){
 		System.out.println("Verticals: " + rack.size());
+		if(currNode == null)
+			return;
 		if(anchory + offset >= Board.height || anchory + offset < 0)
 			return;
 
@@ -256,7 +261,7 @@ public class GADDAG {
 		}
 		else if(!rack.isEmpty()){	//else if we still have letters we can play
 			for(Tile t : rack){	//for each letter left on the rack
-				if(t != Tile.BLANK && board.square(anchorx, anchory + offset).legal(t)){	//if not blank + is legal to play in next square
+				if(t != Tile.BLANK && board.square(anchorx, anchory + offset).legal(t.character)){	//if not blank + is legal to play in next square
 					ArrayList<Tile> newRack = new ArrayList<Tile>(rack);
 					newRack.remove(t);
 					GADDAGNode nextNode = currNode.get(t.character);
@@ -276,23 +281,27 @@ public class GADDAG {
 
 		if(offset <= 0){	//if making prefix
 			//if its a valid move ending record it
-			if(currNode.hasAsEnd(letter) && board.square(anchorx, anchory + offset).legal(Tile.valueOf(letter)) && !board.square(anchorx, anchory + offset).hasTile()/*needed?*/){
+			if(currNode.hasAsEnd(letter) && board.square(anchorx, anchory + offset).legal(letter) && !board.square(anchorx, anchory + offset).hasTile()/*needed?*/){
 				recordMove(inMove, moves);
+				System.out.println("Move found!");
 			}
 			//continue trying to generate prefixes
 			findVertical(offset - 1, anchorx, anchory, inMove, rack, nextNode, board, moves);
 
 			//if we can start making suffixes do so
 			currNode = currNode.get('@');
-			if(currNode != null)
+			if(currNode != null){
 				findVertical(1, anchorx, anchory, inMove, rack, currNode, board, moves);
+				System.out.println("Delimiter: @ - Vertical");
+			}
 		}
 		else if(offset > 0){	//else if making suffix
 			//if its a valid move ending record it
-			if(currNode.hasAsEnd(letter) && board.square(anchorx, anchory + offset).legal(Tile.valueOf(letter)) && !board.square(anchorx, anchory + offset).hasTile()){
-				//recordMove
+			if(currNode.hasAsEnd(letter) && board.square(anchorx, anchory + offset).legal(letter) && !board.square(anchorx, anchory + offset).hasTile()){
+				recordMove(inMove, moves);
+				System.out.println("Move found!");
 			}
-			//continue tring to generate suffixes
+			//continue trying to generate suffixes
 			currNode = nextNode;
 			findVertical(offset + 1, anchorx, anchory, inMove, rack, currNode, board, moves);
 		}

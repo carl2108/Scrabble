@@ -32,6 +32,8 @@ public class Main {
 		//testComputeMoves();
 		testComputeMoves2();
 		//testComputeCrossSets();
+		//testComputeCrossSets2();
+		//testComputeCrossSets3();
 		//test();
 
 		System.out.println("Program Terminated");
@@ -196,16 +198,14 @@ public class Main {
 		rack.add(Tile.valueOf('T'));
 		System.out.println(rack.toString());
 		
+		board.print();
 		board.computeAnchors();
 		board.printAnchors();
 		board.computeCrossSets(board, g.getRoot());
+		board.printNumCrossSets(board);		//shouldn't be any
 		
-		//System.out.println(board.square[7][7].getLegalSet().toArray()[0].toString());
 		
 		Set<Move> moves = g.findWords(g.getRoot(), rack, board);
-		//board.setFlip(true);
-		//List<Move> list = new ArrayList<Move>(moves);
-		//System.out.println(list.toArray().toString());
 		for(Move m: moves){
 			System.out.println("New Move-------");
 			for(Play p: m){
@@ -219,19 +219,27 @@ public class Main {
 		GADDAG g = new GADDAG();
 		Board board = new Board();
 
-		board.placeLetter('C', 6, 7);
-		board.placeLetter('A', 7, 7);
-		board.placeLetter('T', 8, 7);
+		//board.placeLetter('C', 6, 7);
+		board.placeLetter('T', 7, 7);
+		//board.placeLetter('T', 8, 7);
 		
 		ArrayList<Tile> rack = new ArrayList<Tile>();
-		rack.add(Tile.valueOf('S'));
+		//rack.add(Tile.valueOf('S'));
+		rack.add(Tile.valueOf('R'));
+		rack.add(Tile.valueOf('A'));
 		//rack.print();
 		//System.out.println(rack.toString());
 		
-		board.computeAnchors();
-		board.printAnchors();
+		System.out.println("Board");
 		board.print();
+		board.computeAnchors();
+		System.out.println("Anchors:");
+		board.printAnchors();
 		board.computeCrossSets(board, g.getRoot());
+		System.out.println("Cross Set Numbers:");
+		board.printNumCrossSets(board);
+		
+		board.square(7, 8).printLegalSet();
 		
 		//System.out.println(board.square[7][7].getLegalSet().toArray()[0].toString());
 		
@@ -243,23 +251,55 @@ public class Main {
 				System.out.println("Tile: " + p.letter + " | X: " + p.x + " |Y: " + p.y);
 			}
 		}
-		board.placeMove(moves.iterator().next());
-		board.computeAnchors();
-		board.printAnchors();
-		board.print();
+//		board.placeMove(moves.iterator().next());
+//		board.computeAnchors();
+//		board.printAnchors();
+//		board.print();
 	}
 
 	public static void testComputeCrossSets(){
 		Board board = new Board();
 		GADDAG g = new GADDAG();
-		board.print();
 		board.placeLetter('A', 7, 7);
+		board.print();
 		board.computeCrossSets(board, g.getRoot());
-		System.out.println("Size: " + board.square(7, 7).legalSet.size());
+		System.out.println("Size: " + board.square(8, 7).legalSet.size());
+		System.out.println("Size: " + board.square(7, 8).legalSet.size());
+		board.printNumCrossSets(board);
 		while(board.square(7, 7).legalSet.iterator().hasNext())
-			System.out.println(board.square(7, 7).legalSet.iterator().next());
+			System.out.println(board.square(7, 7).getLegalSet().iterator().next());
 	}
 	
+	//tests PA_ABLE for Y and R, tiles either side
+	public static void testComputeCrossSets2(){
+		Board board = new Board();
+		GADDAG g = new GADDAG();
+		board.placeLetter('A', 6, 7);
+		board.placeLetter('P', 5, 7);
+		board.placeLetter('A', 8, 7);
+		board.placeLetter('B', 9, 7);
+		board.placeLetter('L', 10, 7);
+		board.placeLetter('E', 11, 7);
+		board.print();
+		board.computeCrossSets(board, g.getRoot());
+		System.out.println("Size: " + board.square(8, 7).legalSet.size());
+		System.out.println("Size: " + board.square(7, 8).legalSet.size());
+		board.printNumCrossSets(board);
+	}
+	
+	public static void testComputeCrossSets3(){
+		Board board = new Board();
+		GADDAG g = new GADDAG();
+		//board.placeLetter('A', 6, 7);
+		board.placeLetter('C', 7, 7);
+		//board.placeLetter('T', 7, 7);	//then without T
+		
+		board.print();
+		board.computeCrossSets(board, g.getRoot());
+		System.out.println("Size: " + board.square(8, 7).legalSet.size());
+		System.out.println("Size: " + board.square(7, 8).legalSet.size());
+		board.printNumCrossSets(board);
+	}
 	public static void test(){
 		Board board = new Board();
 		GADDAG g = new GADDAG();

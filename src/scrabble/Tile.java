@@ -45,8 +45,6 @@ public enum Tile {
 		}
 		return Tile.NULL;
 	}
-
-
 	
 	private Image getImg(char l){
 		return new ImageIcon("img//letters//" + Character.toString(l).toUpperCase() + ".tiff").getImage().getScaledInstance(35, 35, Image.SCALE_DEFAULT);

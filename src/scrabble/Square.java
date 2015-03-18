@@ -7,54 +7,35 @@ public class Square {
 	
 	private int letterMultiplier;
 	private int wordMultiplier;
-	public Set<Character> legalSet;	//*dunno what this is for? - possibly calculating cross sets?
-	private Tile tile;
+	public Set<Character> legalSet;
 	private boolean isAnchor;
-	private String str;
 	public int x, y;
 	public char letter;
 	
 	public Square(String code, int i, int j) {
-		this.str = code;
-		this.tile = null;
 		this.isAnchor = false;
 		this.legalSet = new HashSet<Character>();
 		this.x = i;
 		this.y = j;
 		this.letter = '!';
-		if(code == "__"){
+		if(code.charAt(1) == '_'){	
 			this.wordMultiplier = 1;
 			this.letterMultiplier = 1;
-			System.out.println("HI");
 		}
-		else if(code.substring(1) == "w"){
+		else if(code.charAt(1) == 'w'){
 			this.wordMultiplier = Integer.parseInt(code.substring(0, 1));
 			this.letterMultiplier = 1;
 		}
-		else if(code.substring(1) == "l"){
+		else if(code.charAt(1) == 'l'){
 			this.wordMultiplier = 1;
 			this.letterMultiplier = Integer.parseInt(code.substring(0, 1));
 		}
-		else if(code.substring(1) == "_"){
-			System.out.println("true");
-		}
-		//else throw new IllegalArgumentException("Invalid Code");
+		else throw new IllegalArgumentException("Invalid Code");
 	}
 	
 	public char getLetter(){
 		return this.letter;
 	}
-
-//	public void addAllToLegal(Set<Character> endSet) {
-//		for (Character c : endSet) {
-//			legalSet.add(Tile.value);
-//		}
-//
-//	}
-//
-//	public void addLegalSet(char c) {
-//		this.getLegalSet().add(Tile.valueOf(c));
-//	}
 	
 	//check if its an anchor square
 	public boolean isAnchor() {
@@ -66,19 +47,13 @@ public class Square {
 		this.isAnchor = isAnchor;
 	}
 	
-	//get tile on board square
-	public Tile getTile() {
-		return tile;
-	}
-	
 	public boolean hasTile() {
-		return letter != '!';	//return true if tile is not equal to null?
+		return letter != '!';
 	}
 	
 	//puts letter on board square
 	public void setLetter(char letter) {
 		this.letter = letter;
-		this.str = " " + letter;
 		this.isAnchor = false;
 	}
 	
@@ -91,26 +66,12 @@ public class Square {
 	public int getWordMultiplier() {
 		return wordMultiplier;
 	}
-	
-	public String getString(){
-		return str;
-	}
 
-//	public boolean legal(Character c) {
-//		if (legalSet.isEmpty()) {
-//			return true;
-//		}
-//		return legalSet.contains(Tile.valueOf(c));
-//	}
-
-	
-	//*dunno what these are for? - check if board square is empty
-	public boolean legal(Tile t) {
-		//System.out.println(t);
-		if (legalSet.isEmpty()) {
+	public boolean legal(Character c) {
+		if(legalSet.isEmpty()) {		//*what if no letters can be legally placed here??
 			return true;
 		}
-		return legalSet.contains(t);
+		return legalSet.contains(c); //return legalSet.contains(Tile.valueOf(c)); - *was this
 	}
 
 	public Set<Character> getLegalSet() {
@@ -127,21 +88,29 @@ public class Square {
 		}
 	}
 
-	public void addLegalSet(Character t) {
+	public void addLegalSet(char t) {
 		this.getLegalSet().add(t);
 	}
-
-	public String getCode() {
-		if (this.tile != null) {
-			return tile.toString() + "_";
+	
+	public void printLegalSet(){
+		for(char c : legalSet){
+			System.out.print(c);
 		}
-		if (this.letterMultiplier > 1) {
+		System.out.println();
+	}
+	
+	public String toString() {
+		if(this.letter != '!') {
+			return " " + letter;
+		}
+		else if(this.letterMultiplier > 1) {
 			return letterMultiplier + "l";
 		}
-		if (this.wordMultiplier > 1) {
+		else if(this.wordMultiplier > 1) {
 			return wordMultiplier + "w";
 		}
-		return "__";
+		else
+			return "__";
 	}
-
+	
 }

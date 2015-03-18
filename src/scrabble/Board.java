@@ -37,7 +37,7 @@ public class Board {
 	public void print(){
 		for(int j=0; j<15; j++){
 			for(int i=0; i<15; i++){
-				System.out.print(square[i][j].getString() + " ");
+				System.out.print(square[i][j].toString() + " ");
 			}
 			System.out.println();
 		}
@@ -87,7 +87,7 @@ public class Board {
 	}
 	
 	public Character getTile(int i, int j) {
-		if (flip) {
+		if (!flip) {
 			return square[i][j].letter;
 		} else {
 			return square[j][i].letter;
@@ -109,11 +109,7 @@ public class Board {
 	
 	public boolean hasTile(int i, int j) {
 		try {
-			if (flip) {
-				return square[i][j].hasTile();
-			} else {
-				return square[j][i].hasTile();
-			}
+			return square[i][j].hasTile();
 		} catch (ArrayIndexOutOfBoundsException e) {
 			return false;
 		}
@@ -121,12 +117,12 @@ public class Board {
 	
 	public void printAnchors(){
 		System.out.print("   ");
-		for(int x=1; x<16; x++)
+		for(int x=0; x<15; x++)
 			System.out.print(" " + x);
 		System.out.println();
 		
 		for(int j=0; j<15; j++){
-			String temp = Integer.toString(j+1);
+			String temp = Integer.toString(j);
 			if(temp.length() < 2)
 				temp = " " + temp;
 			System.out.print(temp + "|");
@@ -144,49 +140,83 @@ public class Board {
 	
 	//////**********************************************
 	
+	public void printNumCrossSets(Board board){
+		System.out.print("   ");
+		for(int x=0; x<15; x++)
+			System.out.print(" " + x);
+		System.out.println();
+		
+		for(int j=0; j<15; j++){
+			String temp = Integer.toString(j);
+			if(temp.length() < 2)
+				temp = " " + temp;
+			System.out.print(temp + "|");
+			
+			for(int i=0; i<15; i++){
+				System.out.print(" " + board.square(i, j).getLegalSet().size());
+			}
+			System.out.println();
+		}
+		System.out.println();
+	}
+	
 	public void computeCrossSets(Board board, GADDAGNode g) {
-		for (int j = 0; j < Board.height; j++) {
-			for (int i = Board.width - 1; i >= 0; i--) {	//why this way?
-			//for(int i=0; i<Board.width; i++){
-				if (!board.hasTile(i, j)) {
+		for(int j = 0; j < Board.height; j++) {
+			//for (int i = Board.width - 1; i >= 0; i--) {	//why this way?
+			for(int i=0; i<Board.width; i++){
+				if(!board.hasTile(i, j)) {		//*if board position is an anchor??
+					//System.out.println("X: " + i + " Y: " + j);
 					board.square(i, j).getLegalSet().clear();
-					computeCrossSet(i, j, g);
+					computeHorizontalCrossSet(i, j, g);
+					//computeVerticalCrossSet(i, j, g);
 				}
 			}
 		}
 	}
-
-	private void computeCrossSet(int i, int j, GADDAGNode root) {
+	
+	//seems to compute horizontal cross sets correctly - will implement for vertical
+	private void computeHorizontalCrossSet(int i, int j, GADDAGNode root) {
+		//System.out.print("Calculating Horizontal Cross Sets: ");
 		GADDAGNode current = root;
+		//if it has a tile either side
 		if (hasTile(i - 1, j) && hasTile(i + 1, j)) {
+			System.out.println(i + " " + j + " tile either side");
 			int x = i - 1;
+			//go to end of prefix
 			while (hasTile(x, j)) {
+				System.out.print(getTile(x, j));
 				current = current.get(getTile(x, j));
 				if (current == null) {
 					return;
 				}
 				x--;
 			}
+			//start making suffix
 			current = current.get('@');
 			if (current != null) {
-				GADDAGNode base = current;
-				for (char c : CharIterator.iter()) {
-					current = base;
-					current = current.get(c);
+				GADDAGNode temp = current;	//for loop will change current node so store it
+				char[] alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
+				for (char c : alphabet) {
+					System.out.println("Trying: " + c);
+					current = temp;
+					GADDAGNode next = current.get(c);	//try putting letter 'c' here and follow suffix to end to see if valid word
 					x = i + 1;
-					while (current != null && hasTile(x + 1, j)) {
-						current = current.get(getTile(x, j));
+					while (next != null && hasTile(x , j)) {	//while there is a letter to the right and haven't reached a null node
+						System.out.println("Continue");
+						current = next;
+						next = next.get(getTile(x , j));
 						x++;
 					}
-					if (current != null) {
-						if (current.hasAsEnd(getTile(x, j))) {
+					//if (current != null) {		//why is current == null??
+						if (current.hasAsEnd(getTile(x - 1, j))) {
 							square(i, j).addLegalSet(c);
 							System.out.println("Adding " + c);
 						}
-					}
+					//}
 				}
 			}
 
+			//else if it has a tile to the left
 		} else if (hasTile(i - 1, j)) {
 			int x = i - 1;
 			while (hasTile(x, j)) {
@@ -197,17 +227,25 @@ public class Board {
 				x--;
 			}
 			current = current.get('@');
-			//if we can switch to making a suffix??
+			//if we can switch to making a suffix
 			if (current != null) {
-				square(i, j).addAllToLegal(current.getEndSet());
-				System.out.println("Added1: " + current.getEndSet().size() + " to X: " + i + " Y: " + j);
-				for(Character c: current.getEndSet()){
-					System.out.println(c.charValue());
-				}
+				//square(i, j).addAllToLegal(current.getTransitionSet());
+				//square(i, j).addAllToLegal(current.getEndSet());
+				Set<Character> temp = current.getEndSet();
+				System.out.println("Hello - End: " + temp.size() + " Trans: " + current.getTransitionSet().size());
+				temp.addAll(current.getTransitionSet());
+				temp.remove('@');
+				square(i, j).addAllToLegal(temp);
+				System.out.println("Added1: " + temp.size() + " to X: " + i + " Y: " + j);
+//				for(Character c: current.getEndSet()){
+//					System.out.println(c.charValue());
+//				}
 			}
 
+			//else if it has a tile to the right
 		} else if (hasTile(i + 1, j)) {
 			int x = i + 1;
+			//go to right most tile
 			while (hasTile(x + 1, j)) {
 				x++;
 			}
@@ -218,12 +256,96 @@ public class Board {
 				}
 				x--;
 			}
-			square(i, j).addAllToLegal(current.getEndSet());
-			System.out.println("Added2: " + current.getEndSet().size() + " to X: " + i + " Y: " + j);
-			for(Character c: current.getEndSet()){
-				System.out.println(c.charValue());
+			Set<Character> temp = current.getEndSet();
+			//System.out.println("End: " + temp.size() + " Trans: " + current.getTransitionSet().size());
+			temp.addAll(current.getTransitionSet());
+			temp.remove('@');
+			for(Character c : temp){
+				System.out.print(c);
 			}
+			square(i, j).addAllToLegal(temp);
+			System.out.println("\nAdded2: " + temp.size() + " to X: " + i + " Y: " + j);
+//			for(Character c: current.getEndSet()){
+//				System.out.println(c.charValue());
+//			}
 		}
+		//System.out.println("Done!");
+	}
+	
+	private void computeVerticalCrossSet(int i, int j, GADDAGNode root) {
+		//System.out.print("Calculating Vertical Cross Sets: ");
+		GADDAGNode current = root;
+		//if it has a tile either side
+		if (hasTile(i, j - 1) && hasTile(i, j + 1)) {
+			int y = j - 1;
+			while (hasTile(i, y)) {
+				current = current.get(getTile(i, y));
+				if (current == null) {
+					return;
+				}
+				y--;
+			}
+			current = current.get('@');
+			if (current != null) {
+				GADDAGNode base = current;
+				char[] alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
+				for (char c : alphabet) {
+					current = base;
+					current = current.get(c);
+					y = j + 1;
+					while (current != null && hasTile(i, y + 1)) {
+						current = current.get(getTile(i, y));
+						y++;
+					}
+					if (current != null) {
+						if (current.hasAsEnd(getTile(i, y))) {
+							square(i, j).addLegalSet(c);
+							//System.out.println("Adding " + c);
+						}
+					}
+				}
+			}
+
+			//else if it has a tile to the left
+		} else if (hasTile(i, j - 1)) {
+			int y = j - 1;
+			while (hasTile(i, y)) {
+				current = current.get(getTile(i, y));
+				if (current == null) {
+					return;
+				}
+				y--;
+			}
+			current = current.get('@');
+			//if we can switch to making a suffix??
+			if (current != null) {
+				square(i, j).addAllToLegal(current.getEndSet());
+//				System.out.println("Added1: " + current.getEndSet().size() + " to X: " + i + " Y: " + j);
+//				for(Character c: current.getEndSet()){
+//					System.out.println(c.charValue());
+//				}
+			}
+
+			//else if it has a tile to the right
+		} else if (hasTile(i, j + 1)) {
+			int y = j + 1;
+			while (hasTile(i, y + 1)) {
+				y++;
+			}
+			while (y > j) {
+				current = current.get(getTile(i, y));
+				if (current == null) {
+					return;
+				}
+				y--;
+			}
+			square(i, j).addAllToLegal(current.getEndSet());
+//			System.out.println("Added2: " + current.getEndSet().size() + " to X: " + i + " Y: " + j);
+//			for(Character c: current.getEndSet()){
+//				System.out.println(c.charValue());
+//			}
+		}
+		//System.out.println("Done!");
 	}
 	
 }

@@ -17,8 +17,12 @@ public class Move implements Iterable<Play> {
 		this.plays = new HashSet<Play>(other.plays);
 	}
 	
-	public void addPlay(int x, int y, char l, boolean vertical){
+	public void addPlay(int x, int y, char l){
 		plays.add(new Play(x, y, l));
+	}
+	
+	public void addPlay(Play p){
+		plays.add(p);
 	}
 
 	public void setScore(int score) {

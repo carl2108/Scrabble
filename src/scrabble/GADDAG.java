@@ -17,7 +17,7 @@ public class GADDAG {
 		buildtime = System.currentTimeMillis();
 		rootMin = null;
 
-		File file = new File("text//cat.txt");
+		File file = new File("text//OSPD.txt");
 		try {
 			rootMin = buildGADDAG(new Scanner(file));
 		} catch (FileNotFoundException e) {
@@ -172,17 +172,15 @@ public class GADDAG {
 		for(int j=0; j<Board.height; j++){
 			for(int i=0; i<Board.width; i++){
 				if(board.square(i, j).isAnchor()){	//if square is an anchor + *hasnt been used in prev gen
-					findHorizontal(0, i, j, new Move(), rack, root, board, moves);
-					//findVertical(0, i, j, new Move(), rack, root, board, moves);
+					findHorizontal(0, i, j, new Move(), rack, root, board, moves, true);
+					findVertical(0, i, j, new Move(), rack, root, board, moves, true);
 				}
 			}
 		}
 		return moves;
 	}
 
-	public void findHorizontal(int offset, int anchorx, int anchory, Move inMove, ArrayList<Tile> rack, GADDAGNode currNode, Board board, Set<Move> moves){
-		if(currNode == null)
-			return;
+	public void findHorizontal(int offset, int anchorx, int anchory, Move inMove, ArrayList<Tile> rack, GADDAGNode currNode, Board board, Set<Move> moves, boolean reverse){
 		if(anchorx + offset >= Board.width || anchorx + offset < 0)
 			return;
 
@@ -190,20 +188,19 @@ public class GADDAG {
 			char l = board.get(anchorx + offset, anchory);
 			GADDAGNode nextNode = currNode.get(l);
 			Move newMove = new Move(inMove);
-			newMove.addPlay(anchorx + offset, anchory, l, false);
-			goOnHorizontal(offset, anchorx, anchory, l, newMove, rack, currNode, nextNode, board, moves);	//move on to the next square
+			newMove.addPlay(anchorx + offset, anchory, l);
+			goOnHorizontal(offset, anchorx, anchory, l, newMove, rack, currNode, nextNode, board, moves, reverse);	//move on to the next square
 		}
 		else if(!rack.isEmpty()){	//else if we still have letters we can play
+			System.out.println(board.square(anchorx + offset, anchory).getLegalVerticalSet().size());
 			for(Tile t : rack){	//for each letter left on the rack
-				if(t != Tile.BLANK && (board.square(anchorx + offset, anchory).legalVertical(t.character) || !board.square(anchorx + offset, anchory).isAnchor())){	//if not blank + is legal to play in next square
-					//if(currNode == null)
-					//	return;
+				if(t != Tile.BLANK && (!board.square(anchorx + offset, anchory).legalVertical(t.character))){	//if not blank + is legal to play in next square
 					ArrayList<Tile> newRack = new ArrayList<Tile>(rack);
 					newRack.remove(t);
-					GADDAGNode nextNode = currNode.get(t.character);		//null pointer exception here! currNode = null
+					GADDAGNode nextNode = currNode.get(t.character);
 					Move newMove = new Move(inMove);
-					newMove.addPlay(anchorx + offset, anchory, t.character, false);
-					goOnHorizontal(offset, anchorx, anchory, t.character, newMove, newRack, currNode, nextNode, board, moves);
+					newMove.addPlay(anchorx + offset, anchory, t.character);
+					goOnHorizontal(offset, anchorx, anchory, t.character, newMove, newRack, currNode, nextNode, board, moves, reverse);
 				} 
 			} 
 		}
@@ -211,106 +208,119 @@ public class GADDAG {
 			System.out.println("No more possibilities");
 	}
 
-	public void goOnHorizontal(int offset, int anchorx, int anchory, char letter, Move inMove, ArrayList<Tile> rack, GADDAGNode currNode, GADDAGNode nextNode, Board board, Set<Move> moves){
-		//if(currNode == null)	//if current node is null we cant continue so return
-		//	return;
-
+	public void goOnHorizontal(int offset, int anchorx, int anchory, char letter, Move inMove, ArrayList<Tile> rack, GADDAGNode currNode, GADDAGNode nextNode, Board board, Set<Move> moves, boolean reverse){
 		if(offset <= 0){	//if making prefix
 			//if its a valid move ending record it
-			if(currNode.hasAsEnd(letter) /*&& !nextNode.hasAsTrans('@')*/ && (board.square(anchorx + offset, anchory).legalVertical(letter) || !board.square(anchorx + offset, anchory).isAnchor())){
+			if(currNode.hasAsEnd(letter) && !board.square(anchorx + offset - 1, anchory).hasTile()){
 				recordMove(inMove, moves);
 				System.out.println("Move found! 1");
-			}
-			//continue trying to generate prefixes passing nextNode as currNode
-			findHorizontal(offset - 1, anchorx, anchory, inMove, rack, nextNode, board, moves);
-
-			//if we can start making suffixes do so
-			if(nextNode != null){
-			nextNode = nextNode.get('@');
-				if(nextNode != null){
-					findHorizontal(1, anchorx, anchory, inMove, rack, nextNode, board, moves);
-					System.out.println("Delimiter: @");
+			}else if(reverse && nextNode != null){														//*this part not in papers!
+				if(nextNode.hasAsEnd(board.square(anchorx + offset - 1, anchory).getLetter())){		
+					Move newMove = new Move(inMove);
+					newMove.addPlay(anchorx + offset - 1, anchory, board.square(anchorx + offset - 1, anchory).getLetter());
+					recordMove(newMove, moves);
+					System.out.println("Move found! 1 rev true");
 				}
 			}
+			//continue trying to generate prefixes passing nextNode as currNode
+			if(nextNode != null){
+				if(!board.square(anchorx + offset -1, anchory).hasTile())
+					findHorizontal(offset - 1, anchorx, anchory, inMove, rack, nextNode, board, moves, reverse);
+	
+				//if we can start making suffixes do so
+				nextNode = nextNode.get('@');
+					if(nextNode != null && !board.square(anchorx + offset - 1, anchory).hasTile() /*&& !board.square(anchorx + 1, anchory).hasTile()*/){
+						findHorizontal(1, anchorx, anchory, inMove, rack, nextNode, board, moves, false);
+						System.out.println("Delimiter: @");
+					}
+				}
 		}
 		else if(offset > 0){	//else if making suffix
 			//if its a valid move ending record it
-			if(currNode.hasAsEnd(letter) && (board.square(anchorx + offset, anchory).legalVertical(letter) || !board.square(anchorx + offset, anchory).isAnchor())){
+			if(currNode.hasAsEnd(letter) && !board.square(anchorx + offset + 1, anchory).hasTile()){
 				recordMove(inMove, moves);
 				System.out.println("Move found! 2");
 			}
-			//continue trying to generate suffixes
-			currNode = nextNode;
-			findHorizontal(offset + 1, anchorx, anchory, inMove, rack, currNode, board, moves);
+			if(nextNode != null && !board.square(anchorx + offset + 1, anchory).hasTile()){
+				//continue trying to generate suffixes
+				currNode = nextNode;
+				findHorizontal(offset + 1, anchorx, anchory, inMove, rack, currNode, board, moves, reverse);
+			}
 		}
 		else
 			System.out.println("Invalid");
 	}
-
-//	public void findVertical(int offset, int anchorx, int anchory, Move inMove, ArrayList<Tile> rack, GADDAGNode currNode, Board board, Set<Move> moves){
-//		System.out.println("Verticals: " + rack.size());
-//		if(currNode == null)
-//			return;
-//		if(anchory + offset >= Board.height || anchory + offset < 0)
-//			return;
-//
-//		if(board.hasTile(anchorx, anchory + offset)){		//if there is a tile in the square to the left we must include this in the current move
-//			char l = board.get(anchorx, anchory + offset);
-//			GADDAGNode nextNode = currNode.get(l);
-//			Move newMove = new Move(inMove);
-//			newMove.addPlay(anchorx, anchory + offset, l, true);
-//			goOnVertical(offset, anchorx, anchory, l, newMove, rack, currNode, nextNode, board, moves);	//move on to the next square
-//		}
-//		else if(!rack.isEmpty()){	//else if we still have letters we can play
-//			for(Tile t : rack){	//for each letter left on the rack
-//				if(t != Tile.BLANK && board.square(anchorx, anchory + offset).legal(t.character)){	//if not blank + is legal to play in next square
-//					ArrayList<Tile> newRack = new ArrayList<Tile>(rack);
-//					newRack.remove(t);
-//					GADDAGNode nextNode = currNode.get(t.character);
-//					Move newMove = new Move(inMove);
-//					newMove.addPlay(anchorx, anchory + offset, t.character, true);
-//					goOnVertical(offset, anchorx, anchory, t.character, newMove, newRack, currNode, nextNode, board, moves);
-//				} 
-//			} 
-//		}
-//		else
-//			System.out.println("No more possibilities vertical");
-//	}
-//
-//	public void goOnVertical(int offset, int anchorx, int anchory, char letter, Move inMove, ArrayList<Tile> rack, GADDAGNode currNode, GADDAGNode nextNode, Board board, Set<Move> moves){
-//		if(currNode == null)	//if current node is null we cant continue so return
-//			return;
-//
-//		if(offset <= 0){	//if making prefix
-//			//if its a valid move ending record it
-//			if(currNode.hasAsEnd(letter) && board.square(anchorx, anchory + offset).legal(letter) && !board.square(anchorx, anchory + offset).hasTile()/*needed?*/){
-//				recordMove(inMove, moves);
-//				System.out.println("Move found!");
-//			}
-//			//continue trying to generate prefixes
-//			findVertical(offset - 1, anchorx, anchory, inMove, rack, nextNode, board, moves);
-//
-//			//if we can start making suffixes do so
-//			currNode = currNode.get('@');
-//			if(currNode != null){
-//				findVertical(1, anchorx, anchory, inMove, rack, currNode, board, moves);
-//				System.out.println("Delimiter: @ - Vertical");
-//			}
-//		}
-//		else if(offset > 0){	//else if making suffix
-//			//if its a valid move ending record it
-//			if(currNode.hasAsEnd(letter) && board.square(anchorx, anchory + offset).legal(letter) && !board.square(anchorx, anchory + offset).hasTile()){
-//				recordMove(inMove, moves);
-//				System.out.println("Move found!");
-//			}
-//			//continue trying to generate suffixes
-//			currNode = nextNode;
-//			findVertical(offset + 1, anchorx, anchory, inMove, rack, currNode, board, moves);
-//		}
-//		else
-//			System.out.println("Invalid Vertical");
-//	}
 	
+	public void findVertical(int offset, int anchorx, int anchory, Move inMove, ArrayList<Tile> rack, GADDAGNode currNode, Board board, Set<Move> moves, boolean reverse){
+		if(anchory + offset >= Board.height || anchory + offset < 0)
+			return;
+
+		if(board.hasTile(anchorx, anchory + offset)){		//if there is a tile in the square to the left we must include this in the current move
+			char l = board.get(anchorx, anchory + offset);
+			GADDAGNode nextNode = currNode.get(l);
+			Move newMove = new Move(inMove);
+			newMove.addPlay(anchorx, anchory + offset, l);
+			goOnVertical(offset, anchorx, anchory, l, newMove, rack, currNode, nextNode, board, moves, reverse);	//move on to the next square
+		}
+		else if(!rack.isEmpty()){	//else if we still have letters we can play
+			System.out.println(board.square(anchorx, anchory + offset).getLegalHorizontalSet().size());
+			for(Tile t : rack){	//for each letter left on the rack
+				if(t != Tile.BLANK && (!board.square(anchorx, anchory + offset).legalHorizontal(t.character))){	//if not blank + is legal to play in next square
+					ArrayList<Tile> newRack = new ArrayList<Tile>(rack);
+					newRack.remove(t);
+					GADDAGNode nextNode = currNode.get(t.character);
+					Move newMove = new Move(inMove);
+					newMove.addPlay(anchorx, anchory + offset, t.character);
+					goOnVertical(offset, anchorx, anchory, t.character, newMove, newRack, currNode, nextNode, board, moves, reverse);
+				} 
+			} 
+		}
+		else
+			System.out.println("No more possibilities");
+	}
+
+	public void goOnVertical(int offset, int anchorx, int anchory, char letter, Move inMove, ArrayList<Tile> rack, GADDAGNode currNode, GADDAGNode nextNode, Board board, Set<Move> moves, boolean reverse){
+		if(offset <= 0){	//if making prefix
+			//if its a valid move ending record it
+			if(currNode.hasAsEnd(letter) && !board.square(anchorx, anchory + offset - 1).hasTile()){
+				recordMove(inMove, moves);
+				System.out.println("Move found! 1");
+			}else if(reverse && nextNode != null){
+				if(nextNode.hasAsEnd(board.square(anchorx, anchory + offset - 1).getLetter())){		//*this part not in papers!
+					Move newMove = new Move(inMove);
+					newMove.addPlay(anchorx, anchory + offset - 1, board.square(anchorx, anchory + offset - 1).getLetter());
+					recordMove(newMove, moves);
+					System.out.println("Move found! 1 rev true");
+				}
+			}
+			//continue trying to generate prefixes passing nextNode as currNode
+			if(nextNode != null){
+				if(!board.square(anchorx, anchory + offset - 1).hasTile())
+					findVertical(offset - 1, anchorx, anchory, inMove, rack, nextNode, board, moves, reverse);
+	
+				//if we can start making suffixes do so
+				nextNode = nextNode.get('@');
+					if(nextNode != null && !board.square(anchorx, anchory + offset - 1).hasTile()){
+						findVertical(1, anchorx, anchory, inMove, rack, nextNode, board, moves, false);
+						System.out.println("Delimiter: @");
+					}
+				}
+		}
+		else if(offset > 0){	//else if making suffix
+			//if its a valid move ending record it
+			if(currNode.hasAsEnd(letter) && !board.square(anchorx, anchory + offset + 1).hasTile()){
+				recordMove(inMove, moves);
+				System.out.println("Move found! 2");
+			}
+			if(nextNode != null && !board.square(anchorx, anchory + offset + 1).hasTile()){
+				//continue trying to generate suffixes
+				currNode = nextNode;
+				findVertical(offset + 1, anchorx, anchory, inMove, rack, currNode, board, moves, reverse);
+			}
+		}
+		else
+			System.out.println("Invalid");
+	}
 
 	private void recordMove(Move move, Set<Move> output) {
 		output.add(move);

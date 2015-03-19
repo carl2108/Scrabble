@@ -69,17 +69,17 @@ public class Square {
 	}
 
 	public boolean legalHorizontal(Character c) {
-		if(legalHorizontalSet.isEmpty()) {		//*what if no letters can be legally placed here??
-			return true;
+		if(legalHorizontalSet.isEmpty()) {		
+			return false;
 		}
-		return legalHorizontalSet.contains(c); //return legalSet.contains(Tile.valueOf(c)); - *was this
+		return !legalHorizontalSet.contains(c);
 	}
 	
 	public boolean legalVertical(Character c) {
 		if(legalVerticalSet.isEmpty()) {		//*what if no letters can be legally placed here??
-			return true;
+			return false;
 		}
-		return legalVerticalSet.contains(c); //return legalSet.contains(Tile.valueOf(c)); - *was this
+		return !legalVerticalSet.contains(c); //return legalSet.contains(Tile.valueOf(c)); - *was this
 	}
 
 	public Set<Character> getLegalHorizontalSet() {
@@ -105,7 +105,7 @@ public class Square {
 	}
 	
 	public void addAllToLegalVertical(Set<Character> endSet) {
-		for (Character t : endSet) {
+		for(Character t : endSet) {
 			legalVerticalSet.add(t);
 		}
 	}

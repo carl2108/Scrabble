@@ -9,6 +9,10 @@ public class Play {
 		this.y = y;
 		this.letter = l;
 	}
+	
+	public String toString(){
+		return "Letter: " + this.letter + " X: " + this.x + " Y: " + this.y;
+	}
 
 //	@Override
 //	public boolean equals(Object obj) {

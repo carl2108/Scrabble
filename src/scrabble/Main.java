@@ -1,6 +1,6 @@
 package scrabble;
 
-// pass to VM arguments under run config to set program memory allocation "-Xmx1024m"
+// pass to VM arguments under run configuration to set program memory allocation "-Xmx1024m"
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -19,7 +19,6 @@ public class Main {
 	public static void main(String[] args) throws FileNotFoundException {	
 		
 		//testLetterbag();
-		//testFindWords();
 		//testCheckWords();
 		//testBoard();
 		//testTraverseGADDAG();
@@ -30,12 +29,14 @@ public class Main {
 		//testMove();
 		//testGUIRack();
 		//testTileRackImage();
-		testComputeMoves();
+		//testComputeMoves();		//empty board
 		//testComputeMoves2();
+		//testComputeMoves3();
 		//testComputeCrossSets();
 		//testComputeCrossSets2();
-		//testComputeCrossSets3();
 		//test();
+		//testCalculateScore();
+		//testCalculateScore2();
 
 		System.out.println("Program Terminated");
 	}
@@ -71,7 +72,6 @@ public class Main {
 			String s = scan.nextLine();
 			g.consoleWrite(s);
 		}
-		////////////Try inputing and output through GUI console window only to get rid of focus manager messages?
 	}
 	
 	public static void testCheckWords() {
@@ -118,11 +118,6 @@ public class Main {
 				e.printStackTrace();
 			}
 		}
-	}
-	
-	public static void testCountGADDAGWords(){
-		GADDAG test = new GADDAG();
-		
 	}
 	
 	public static void testCheckAllWords(){
@@ -175,9 +170,6 @@ public class Main {
 		
 		System.out.println("move created");
 		
-		//place move and update anchors
-		//board.placeMove(move);
-		//board.print();
 		board.computeAnchors();
 		board.printAnchors();
 	}
@@ -192,7 +184,6 @@ public class Main {
 	public static void testComputeMoves(){
 		GADDAG g = new GADDAG();
 		Board board = new Board();
-		//Rack rack = new Rack();
 		ArrayList<Tile> rack = new ArrayList<Tile>();
 		rack.add(Tile.valueOf('R'));
 		rack.add(Tile.valueOf('A'));
@@ -204,7 +195,6 @@ public class Main {
 		board.printAnchors();
 		board.computeCrossSets(board, g.getRoot());
 		board.printNumCrossSets(board);		//shouldn't be any
-		
 		
 		Set<Move> moves = g.findWords(g.getRoot(), rack, board);
 		System.out.println("Moves!");
@@ -223,14 +213,13 @@ public class Main {
 
 		//board.placeLetter('C', 6, 7);
 		//board.placeLetter('N', 7, 7);
-		board.placeLetter('T', 7, 7);
+		board.placeLetter('R', 7, 7);
 		
 		ArrayList<Tile> rack = new ArrayList<Tile>();
 		//rack.add(Tile.valueOf('S'));
-		rack.add(Tile.valueOf('R'));
+		rack.add(Tile.valueOf('E'));
 		rack.add(Tile.valueOf('A'));
 		//rack.print();
-		//System.out.println(rack.toString());
 		
 		System.out.println("Board");
 		board.print();
@@ -241,10 +230,6 @@ public class Main {
 		System.out.println("Cross Set Numbers:");
 		board.printNumCrossSets(board);
 		
-		//board.square(7, 8).printLegalSet();
-		
-		//System.out.println(board.square[7][7].getLegalSet().toArray()[0].toString());
-		
 		Set<Move> moves = g.findWords(g.getRoot(), rack, board);
 		System.out.println("Moves: " + moves.size());
 		for(Move m: moves){
@@ -253,41 +238,35 @@ public class Main {
 				System.out.println("Tile: " + p.letter + " | X: " + p.x + " |Y: " + p.y);
 			}
 		}
-//		board.placeMove(moves.iterator().next());
-//		board.computeAnchors();
-//		board.printAnchors();
-//		board.print();
 	}
 
-//	public static void testComputeCrossSets(){
-//		Board board = new Board();
-//		GADDAG g = new GADDAG();
-//		board.placeLetter('A', 7, 7);
-//		board.print();
-//		board.computeCrossSets(board, g.getRoot());
-//		System.out.println("Size: " + board.square(8, 7).legalSet.size());
-//		System.out.println("Size: " + board.square(7, 8).legalSet.size());
-//		board.printNumCrossSets(board);
-//		while(board.square(7, 7).legalSet.iterator().hasNext())
-//			System.out.println(board.square(7, 7).getLegalSet().iterator().next());
-//	}
+	public static void testComputeCrossSets(){
+		Board board = new Board();
+		GADDAG g = new GADDAG();
+		board.placeLetter('R', 7, 7);
+		board.print();
+		board.computeCrossSets(board, g.getRoot());
+		System.out.println("Size: " + board.square(8, 7).legalVerticalSet.size());
+		System.out.println("Size: " + board.square(7, 8).legalVerticalSet.size());
+		board.printNumCrossSets(board);
+		while(board.square(7, 7).legalVerticalSet.iterator().hasNext())
+			System.out.println(board.square(7, 7).getLegalVerticalSet().iterator().next());
+	}
 	
 	//tests PA_ABLE for Y and R, tiles either side
-//	public static void testComputeCrossSets2(){
-//		Board board = new Board();
-//		GADDAG g = new GADDAG();
-//		board.placeLetter('A', 6, 7);
-//		board.placeLetter('P', 5, 7);
-//		board.placeLetter('A', 8, 7);
-//		board.placeLetter('B', 9, 7);
-//		board.placeLetter('L', 10, 7);
-//		board.placeLetter('E', 11, 7);
-//		board.print();
-//		board.computeCrossSets(board, g.getRoot());
-//		System.out.println("Size: " + board.square(8, 7).legalSet.size());
-//		System.out.println("Size: " + board.square(7, 8).legalSet.size());
-//		board.printNumCrossSets(board);
-//	}
+	public static void testComputeCrossSets2(){
+		Board board = new Board();
+		GADDAG g = new GADDAG();
+		board.placeLetter('A', 6, 7);
+		board.placeLetter('P', 5, 7);
+		board.placeLetter('A', 8, 7);
+		board.placeLetter('B', 9, 7);
+		board.placeLetter('L', 10, 7);
+		board.placeLetter('E', 11, 7);
+		board.print();
+		board.computeCrossSets(board, g.getRoot());
+		board.printNumCrossSets(board);
+	}
 	
 //	public static void testComputeCrossSets3(){
 //		Board board = new Board();
@@ -302,6 +281,112 @@ public class Main {
 //		System.out.println("Size: " + board.square(7, 8).legalSet.size());
 //		board.printNumCrossSets(board);
 //	}
+	
+	public static void testComputeMoves3() {
+		GADDAG g = new GADDAG();
+		Board board = new Board();
+
+		//board.placeLetter('C', 6, 7);
+		//board.placeLetter('N', 7, 7);
+		board.placeLetter('R', 7, 7);
+		
+		ArrayList<Tile> rack = new ArrayList<Tile>();
+		//rack.add(Tile.valueOf('S'));
+		rack.add(Tile.valueOf('E'));
+		rack.add(Tile.valueOf('A'));
+		
+		System.out.println("Board");
+		board.print();
+		board.computeAnchors();
+		System.out.println("Anchors:");
+		board.printAnchors();
+		board.computeCrossSets(board, g.getRoot());
+		System.out.println("Cross Set Numbers:");
+		board.printNumCrossSets(board);
+		
+		Set<Move> moves = g.findWords(g.getRoot(), rack, board);
+		System.out.println("Moves: " + moves.size());
+		for(Move m: moves){
+			System.out.println("New Move-------");
+			for(Play p: m){
+				System.out.println("Tile: " + p.letter + " | X: " + p.x + " |Y: " + p.y);
+			}
+		}
+	}
+	
+	public static void testCalculateScore(){
+		Board board = new Board();
+		board.placeLetter('A', 7, 7);
+		board.print();
+		
+		Play p1 = new Play(6, 7, 'Q');
+		Play p2 = new Play(5, 7, 'B');
+		Play p3 = new Play(7, 7, 'A');
+		
+		Move m = new Move();
+		m.addPlay(p1);
+		m.addPlay(p2);
+		m.addPlay(p3);
+		
+		System.out.println("Score: " + board.calculateScore(m));
+	}
+	
+	public static void testCalculateScore2(){
+		Board board = new Board();
+		board.placeLetter('A', 7, 7);
+		board.print();
+		board.computeAnchors();
+		board.printAnchors();
+		
+		Play p1 = new Play(6, 7, 'Q');
+		Play p2 = new Play(5, 7, 'B');
+		Play p3 = new Play(7, 7, 'A');
+		
+		Move m = new Move();
+		m.addPlay(p1);
+		m.addPlay(p2);
+		m.addPlay(p3);
+		
+		System.out.println("Score: " + board.calculateScore(m));
+		board.placeMove(m);
+		board.computeAnchors();
+		board.print();
+		board.printAnchors();
+		
+//		Play p4 = new Play(6, 9, 'F');
+//		Play p5 = new Play(7, 9, 'E');
+//		Play p6 = new Play(8, 9, 'Z');
+//		Play p7 = new Play(9, 9, 'A');
+//		
+//		Move m1 = new Move();
+//		m.addPlay(p4);
+//		m.addPlay(p5);
+//		m.addPlay(p6);
+//		m.addPlay(p7);
+//		
+//		System.out.println("Score m1: " + board.calculateScore(m1));
+//		board.placeMove(m1);
+//		board.computeAnchors();
+//		board.print();
+		
+		Play p10 = new Play(7, 7, 'A');
+		Play p20 = new Play(7, 8, 'B');
+		Play p30 = new Play(7, 9, 'Q');
+		
+		Move m2 = new Move();
+		m2.addPlay(p10);
+		m2.addPlay(p20);
+		m2.addPlay(p30);
+		
+		System.out.println("Score: " + board.calculateScore(m2));
+		board.placeMove(m2);
+		board.computeAnchors();
+		board.print();
+		board.printAnchors();
+		
+		
+	}
+	
 	public static void test(){
 		Board board = new Board();
 		GADDAG g = new GADDAG();

@@ -17,7 +17,6 @@ import java.util.logging.Logger;
 public class Main {
 
 	public static void main(String[] args) throws FileNotFoundException {	
-		
 		//testLetterbag();
 		//testCheckWords();
 		//testBoard();
@@ -37,8 +36,17 @@ public class Main {
 		//test();
 		//testCalculateScore();
 		//testCalculateScore2();
+		testLayeredGUI();
 
-		System.out.println("Program Terminated");
+		System.out.println("\nProgram Terminated");
+	}
+	
+	public static void testLayeredGUI() {
+		GUI g = new GUI();
+		
+		char[] c = {'f', 'h', 'x', 'e', 'q', 'r'};
+		g.refreshRack(c);
+		
 	}
 	
 	public static void testLetterbag(){
@@ -49,19 +57,6 @@ public class Main {
 			System.out.println("Letter: " + t + " | Value: " + Tile.valueOf(t));
 		}
 	}
-	/*
-	public static void testFindWords() {
-		System.out.println("*****Find Words Test*****\n");
-		GADDAG test = new GADDAG();
-		
-		ArrayList<Character> letters = new ArrayList<Character>(Arrays.asList('H', 'A', 'L', 'L', 'A', 'T'));
-		//System.out.println("Traverse: " + Arrays.toString(test.traverse(test.getRoot()).toArray()));
-		
-		Set<String> words = test.findWords(test.getRoot(), letters);
-		System.out.println("All Words:\n" + Arrays.toString(words.toArray()));
-		
-	}
-	*/
 	
 	//test GUI and console writing function
 	public static void testGUI(){
@@ -154,7 +149,7 @@ public class Main {
 	public static void testPlaceTile2(){
 		Board b = new Board();
 		b.print();
-		b.placeLetter('B', b.square[7][7]);
+		b.placeLetter('B', 7, 7);
 		b.print();
 	}
 	
@@ -216,9 +211,10 @@ public class Main {
 		board.placeLetter('R', 7, 7);
 		
 		ArrayList<Tile> rack = new ArrayList<Tile>();
-		//rack.add(Tile.valueOf('S'));
-		rack.add(Tile.valueOf('E'));
+		//rack.add(Tile.valueOf('E'));
 		rack.add(Tile.valueOf('A'));
+		rack.add(Tile.valueOf('T'));
+		rack.add(Tile.valueOf('S'));
 		//rack.print();
 		
 		System.out.println("Board");
@@ -243,14 +239,16 @@ public class Main {
 	public static void testComputeCrossSets(){
 		Board board = new Board();
 		GADDAG g = new GADDAG();
+		board.computeAnchors();
+		board.printAnchors();
+		board.printNumCrossSets(board);
 		board.placeLetter('R', 7, 7);
 		board.print();
+		board.computeAnchors();
+		board.printAnchors();
+		
 		board.computeCrossSets(board, g.getRoot());
-		System.out.println("Size: " + board.square(8, 7).legalVerticalSet.size());
-		System.out.println("Size: " + board.square(7, 8).legalVerticalSet.size());
 		board.printNumCrossSets(board);
-		while(board.square(7, 7).legalVerticalSet.iterator().hasNext())
-			System.out.println(board.square(7, 7).getLegalVerticalSet().iterator().next());
 	}
 	
 	//tests PA_ABLE for Y and R, tiles either side
@@ -268,32 +266,21 @@ public class Main {
 		board.printNumCrossSets(board);
 	}
 	
-//	public static void testComputeCrossSets3(){
-//		Board board = new Board();
-//		GADDAG g = new GADDAG();
-//		//board.placeLetter('A', 6, 7);
-//		board.placeLetter('C', 7, 7);
-//		//board.placeLetter('T', 7, 7);	//then without T
-//		
-//		board.print();
-//		board.computeCrossSets(board, g.getRoot());
-//		System.out.println("Size: " + board.square(8, 7).legalSet.size());
-//		System.out.println("Size: " + board.square(7, 8).legalSet.size());
-//		board.printNumCrossSets(board);
-//	}
-	
+	//try using full dictionary and give 6 letters
 	public static void testComputeMoves3() {
 		GADDAG g = new GADDAG();
 		Board board = new Board();
 
-		//board.placeLetter('C', 6, 7);
-		//board.placeLetter('N', 7, 7);
-		board.placeLetter('R', 7, 7);
+		board.placeLetter('T', 7, 7);
 		
 		ArrayList<Tile> rack = new ArrayList<Tile>();
-		//rack.add(Tile.valueOf('S'));
+
 		rack.add(Tile.valueOf('E'));
 		rack.add(Tile.valueOf('A'));
+		rack.add(Tile.valueOf('C'));
+		rack.add(Tile.valueOf('L'));
+		rack.add(Tile.valueOf('P'));
+		rack.add(Tile.valueOf('T'));
 		
 		System.out.println("Board");
 		board.print();
@@ -303,6 +290,11 @@ public class Main {
 		board.computeCrossSets(board, g.getRoot());
 		System.out.println("Cross Set Numbers:");
 		board.printNumCrossSets(board);
+		
+		//System pause!
+		Scanner scan = new Scanner(System.in);
+		System.out.println("Pause...");
+		String s = scan.nextLine();
 		
 		Set<Move> moves = g.findWords(g.getRoot(), rack, board);
 		System.out.println("Moves: " + moves.size());

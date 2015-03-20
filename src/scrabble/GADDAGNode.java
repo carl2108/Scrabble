@@ -48,9 +48,6 @@ public class GADDAGNode {
 	public GADDAGNode get(char transitionChar) {
 		for (int i = 0; i < numChildren; i++) {
 			if (transitions[i] == transitionChar) {
-//				log.fine("Going from node " + this.id + " to " + children[i].id
-//						+ " on " + transitionChar);
-//				log.fine(children[i].toString());
 				return children[i];
 			}
 		}
@@ -121,7 +118,6 @@ public class GADDAGNode {
 			return Arrays.copyOf(array, array.length * 2);
 		}
 		return array;
-
 	}
 
 	private byte[] ensureSpace(byte[] array, int insertionPoint) {

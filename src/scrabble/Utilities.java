@@ -5,7 +5,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Scanner;
+import java.util.Set;
 
 public class Utilities {
 	
@@ -35,5 +37,12 @@ public class Utilities {
 		}
 	}
 
+	public static Set<Character> alphabetSet(){
+		Set<Character> test = new HashSet<Character>();
+		for(Character c : "ABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray())
+			test.add(c);
+		
+		return test;
+	}
 	
 }

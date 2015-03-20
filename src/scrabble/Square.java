@@ -14,8 +14,8 @@ public class Square {
 	
 	public Square(String code, int i, int j) {
 		this.isAnchor = false;
-		this.legalHorizontalSet = new HashSet<Character>();
-		this.legalVerticalSet = new HashSet<Character>();
+		this.legalHorizontalSet = Utilities.alphabetSet();
+		this.legalVerticalSet = Utilities.alphabetSet();
 		this.x = i;
 		this.y = j;
 		this.letter = '!';
@@ -68,18 +68,12 @@ public class Square {
 		return wordMultiplier;
 	}
 
-	public boolean legalHorizontal(Character c) {
-		if(legalHorizontalSet.isEmpty()) {		
-			return false;
-		}
-		return !legalHorizontalSet.contains(c);
+	public boolean legalHorizontal(Character c) {		//might be easier to initialize with A-Z and then recalculate as needed?
+		return legalHorizontalSet.contains(c);
 	}
 	
-	public boolean legalVertical(Character c) {
-		if(legalVerticalSet.isEmpty()) {		//*what if no letters can be legally placed here??
-			return false;
-		}
-		return !legalVerticalSet.contains(c); //return legalSet.contains(Tile.valueOf(c)); - *was this
+	public boolean legalVertical(Character c){
+		return legalVerticalSet.contains(c);
 	}
 
 	public Set<Character> getLegalHorizontalSet() {
@@ -100,13 +94,15 @@ public class Square {
 	
 	public void addAllToLegalHorizontal(Set<Character> endSet) {
 		for (Character t : endSet) {
-			legalHorizontalSet.add(t);
+			if(Utilities.alphabetSet().contains(t))
+				legalHorizontalSet.add(t);
 		}
 	}
 	
 	public void addAllToLegalVertical(Set<Character> endSet) {
 		for(Character t : endSet) {
-			legalVerticalSet.add(t);
+			if(Utilities.alphabetSet().contains(t))
+				legalVerticalSet.add(t);
 		}
 	}
 

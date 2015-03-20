@@ -30,6 +30,7 @@ public class Board {
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
+		square[7][7].setAnchor(true);
 	}
 	
 	public void print(){
@@ -43,11 +44,10 @@ public class Board {
 	}
 	
 	public void placeLetter(char l, int x, int y){
+		square[x][y].setAnchor(false);
 		square[x][y].setLetter(l);
-	}
-	
-	public void placeLetter(char l, Square s){
-		s.setLetter(l);
+		square[x][y].legalHorizontalSet.clear();
+		square[x][y].legalVerticalSet.clear();
 	}
 	
 	public void placeMove(Move m){
@@ -78,9 +78,9 @@ public class Board {
 
 	private boolean isValidAnchor(int i, int j) {
 		if (!this.hasTile(i, j)) {
-			if (i == 15 / 2 && j == 15 / 2) {
-				return true;
-			}
+//			if (i == 15 / 2 && j == 15 / 2) {
+//				return true;
+//			}
 			if (hasTile(i - 1, j) || hasTile(i + 1, j) || hasTile(i, j + 1)
 					|| hasTile(i, j - 1)) {
 				return true;
@@ -162,10 +162,14 @@ public class Board {
 		for(int j = 0; j < Board.height; j++) {
 			for(int i=0; i<Board.width; i++){
 				if(board.square(i, j).isAnchor()) {
-					board.square(i, j).getLegalHorizontalSet().clear();
-					computeHorizontalCrossSet(i, j, g);
-					board.square(i, j).getLegalVerticalSet().clear();
-					computeVerticalCrossSet(i, j, g);
+					if(board.square(i + 1, j).hasTile() || board.square(i - 1, j).hasTile()){
+						board.square(i, j).getLegalHorizontalSet().clear();
+						computeHorizontalCrossSet(i, j, g);
+					}
+					if(board.square(i, j + 1).hasTile() || board.square(i, j - 1).hasTile()){
+						board.square(i, j).getLegalVerticalSet().clear();
+						computeVerticalCrossSet(i, j, g);
+					}
 				}
 			}
 		}
@@ -190,8 +194,8 @@ public class Board {
 			current = current.get('@');
 			if (current != null) {
 				GADDAGNode base = current;
-				char[] alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
-				for (char c : alphabet) {
+				//char[] alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
+				for (char c : Utilities.alphabetSet()) {
 					System.out.println("Trying: " + c);
 					current = base;
 					current = current.get(c);
@@ -236,15 +240,11 @@ public class Board {
 				}
 				x--;
 			}
-			if(current.getEndSet().size() > 1)
-				square(i, j).addAllToLegalHorizontal(current.getEndSet());
-			else if(current.getEndSet().toArray()[0].toString() != "")
-				square(i, j).addAllToLegalHorizontal(current.getEndSet());
+			square(i, j).addAllToLegalHorizontal(current.getEndSet());
 		}
 	}
 	
 	private void computeVerticalCrossSet(int i, int j, GADDAGNode root) {
-		//System.out.print("Calculating Vertical Cross Sets: ");
 		GADDAGNode current = root;
 		//if it has a tile either side
 		if(hasTile(i, j - 1) && hasTile(i, j + 1)) {
@@ -259,8 +259,8 @@ public class Board {
 			current = current.get('@');
 			if (current != null) {
 				GADDAGNode base = current;
-				char[] alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
-				for (char c : alphabet) {
+				//char[] alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
+				for (char c : Utilities.alphabetSet()) {
 					current = base;
 					current = current.get(c);
 					y = j + 1;
@@ -276,7 +276,7 @@ public class Board {
 					}
 				}
 			}
-			//else if it has a tile to the left
+			//else if it has a tile to the up
 		} else if (hasTile(i, j - 1)) {
 			int y = j - 1;
 			while (hasTile(i, y)) {
@@ -291,7 +291,7 @@ public class Board {
 			if (current != null) {
 				square(i, j).addAllToLegalVertical(current.getEndSet());
 			}
-			//else if it has a tile to the right
+			//else if it has a tile to the down
 		} else if (hasTile(i, j + 1)) {
 			int y = j + 1;
 			//go to the end of this word
@@ -305,10 +305,7 @@ public class Board {
 				}
 				y--;
 			}
-			if(current.getEndSet().size() > 1)
-				square(i, j).addAllToLegalVertical(current.getEndSet());
-			else if(current.getEndSet().toArray()[0].toString() != "")
-				square(i, j).addAllToLegalVertical(current.getEndSet());
+			square(i, j).addAllToLegalVertical(current.getEndSet());
 		}
 	}
 	
@@ -352,4 +349,17 @@ public class Board {
 		return score += wordScore*wordMult;
 	}
 	
+	public boolean isMoveValid(Move m){
+		boolean hasAnchor = false;
+		for(Play p : m){
+			if(square[p.x][p.y].hasTile())
+				return false;
+			else if(square[p.x][p.y].isAnchor()){
+				hasAnchor = true;
+				if(!square[p.x][p.y].legalHorizontal(p.letter) && !square[p.x][p.y].legalVertical(p.letter))
+					continue;
+			}
+		}
+		return hasAnchor;
+	}
 }

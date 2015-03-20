@@ -3,6 +3,7 @@ package scrabble;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.GridLayout;
 import java.awt.Image;
 import java.io.File;
 import java.io.IOException;
@@ -18,13 +19,13 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
+import javax.swing.JRootPane;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
-
 
 public class GUI implements Runnable{
 	private JFrame frame;
@@ -35,9 +36,7 @@ public class GUI implements Runnable{
 	private JScrollPane scrollPane;
 	private JScrollBar vertical;
 	private JLabel[] rackLetters;
-	
-	private JLayeredPane layeredPane;
-	private JLabel test;
+	private JLabel[][] grid;
  
 	public void run() {
 		while(true);
@@ -56,27 +55,6 @@ public class GUI implements Runnable{
 		frame.setBounds(0, 0, 800, 600);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
-		layeredPane = new JLayeredPane();
-		layeredPane.setPreferredSize(new Dimension(525, 525));
-		
-//		test = new JLabel();
-//		test.setPreferredSize(new Dimension(35, 35));
-//		
-//		Image letterImage;
-//		try {
-//			letterImage = ImageIO.read(new File("img/letters/A.tiff")).getScaledInstance(35, 35, Image.SCALE_DEFAULT);
-//			test.setIcon(new ImageIcon(letterImage));
-//			layeredPane.add(test, 0);
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//		}
-		
-		
-		
-		//board/letter mask layers
-		boardFrame = new JLabel();	//board JFrame container
-		layeredPane.add(boardFrame, 1);	//add board frame as default layer to layered pane
-		
 		//rack frame and letter JLabels
 		rackFrame = new JLabel();		//rack JFrame container
 		rackFrame.setLayout(new BoxLayout(rackFrame, BoxLayout.X_AXIS));
@@ -86,9 +64,31 @@ public class GUI implements Runnable{
 			rackFrame.add(rackLetters[i]);
 		}
 		
+		//board/letter mask layers
+		boardFrame = new JLabel();	//board JFrame container
 		boardImage = new ImageIcon("img/scrabble_board.jpg").getImage().getScaledInstance(525, 525, Image.SCALE_DEFAULT);	
 		boardFrame.setIcon(new ImageIcon(boardImage));
 		boardFrame.setSize(525, 525);
+		
+		//add JLabels to the board which will store letter images later
+		grid = new JLabel[15][15];
+		for(int j=0; j<15; j++){
+			for(int i=0; i<15; i++){
+				grid[i][j] = new JLabel();
+				grid[i][j].setSize(35, 35);
+				grid[i][j].setLocation(i*35, j*35);
+				boardFrame.add(grid[i][j]);
+			}
+		}
+		
+		Image letterImage;
+		try {
+			letterImage = ImageIO.read(new File("img/letters/A.tiff")).getScaledInstance(35, 35, Image.SCALE_DEFAULT);
+			grid[3][4].setIcon(new ImageIcon(letterImage));
+			System.out.println("Added");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		
 		txtConsole = new JTextPane();
 		txtConsole.setEditable(false);	
@@ -102,7 +102,7 @@ public class GUI implements Runnable{
 			groupLayout.createParallelGroup(Alignment.LEADING)
 				.addGroup(groupLayout.createSequentialGroup()
 					.addContainerGap()
-					.addComponent(layeredPane, GroupLayout.PREFERRED_SIZE, 525, GroupLayout.PREFERRED_SIZE)
+					.addComponent(boardFrame, GroupLayout.PREFERRED_SIZE, 525, GroupLayout.PREFERRED_SIZE)
 					.addGap(18)
 					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
 						.addComponent(scrollPane)
@@ -118,7 +118,7 @@ public class GUI implements Runnable{
 							.addComponent(scrollPane, GroupLayout.PREFERRED_SIZE, 80, GroupLayout.PREFERRED_SIZE)
 							.addPreferredGap(ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
 							.addComponent(rackFrame, GroupLayout.PREFERRED_SIZE, 37, GroupLayout.PREFERRED_SIZE))
-						.addComponent(layeredPane, Alignment.LEADING))
+						.addComponent(boardFrame, Alignment.LEADING))
 					.addContainerGap(47, Short.MAX_VALUE))
 		);
 		frame.getContentPane().setLayout(groupLayout);

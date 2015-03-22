@@ -350,6 +350,7 @@ public class Board {
 	}
 	
 	public boolean isMoveValid(Move m){
+		//*check if word is in the dictionary first! - move should be ordered
 		boolean hasAnchor = false;
 		for(Play p : m){
 			if(square[p.x][p.y].hasTile())

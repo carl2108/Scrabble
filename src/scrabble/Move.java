@@ -63,4 +63,10 @@ public class Move implements Iterable<Play> {
 	public int hashCode() {
 		return plays.hashCode();
 	}
+	
+	public void printMove() {
+		System.out.println("New Move-----");
+		for(Play p : this.plays)
+			System.out.println("Letter: " + p.letter + " X: " + p.x + " Y: " + p.y);
+	}
 }

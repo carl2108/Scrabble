@@ -36,16 +36,38 @@ public class Main {
 		//test();
 		//testCalculateScore();
 		//testCalculateScore2();
-		testLayeredGUI();
+		//testLayeredGUI();
+		testGetUserMove();
 
 		System.out.println("\nProgram Terminated");
 	}
 	
 	public static void testLayeredGUI() {
 		GUI g = new GUI();
+		Scanner scan = new Scanner(System.in);
 		
-		char[] c = {'f', 'h', 'x', 'e', 'q', 'r'};
+		char[] c = {'F', 'H', '_', 'E', 'Q', 'R'};
 		g.refreshRack(c);
+		
+		while(true){
+			String s = scan.nextLine();
+			g.consoleWrite(s);
+		}
+		
+	}
+	
+	public static void testGetUserMove(){
+		Board board = new Board();
+		GUI g = new GUI();
+		
+		char[] c = {'F', 'H', '_', 'E', 'Q', 'R'};
+		g.refreshRack(c);
+		
+		System.out.println("Waiting...");
+		Move m;
+		while((m = g.getUserMove()) == null);	//keep asking for move until we have one
+		g.resetUserMove();
+		m.printMove();
 		
 	}
 	

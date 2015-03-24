@@ -2,45 +2,23 @@ package scrabble;
 
 // pass to VM arguments under run configuration to set program memory allocation "-Xmx1024m"
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Scanner;
-import java.util.Set;
-import java.util.Stack;
-import java.util.concurrent.CountDownLatch;
-import java.util.logging.LogManager;
-import java.util.logging.Logger;
 
 public class Main {
 
 	public static void main(String[] args) throws FileNotFoundException, InterruptedException {	
-		//testLetterbag();
-		//testCheckWords();
-		//testBoard();
 		//testTraverseGADDAG();
-		//testCheckAllWords();
-		//testGUI();
-		//testPlaceLetter();
-		//testPlaceTile2();
-		//testMove();
-		//testGUIRack();
-		//testTileRackImage();
 		//testComputeMoves();		//empty board
 		//testComputeMoves2();
 		//testComputeMoves3();
-		//testComputeCrossSets();
 		//testComputeCrossSets2();
-		//test();
 		//testCalculateScore();
 		//testCalculateScore2();
-		//testLayeredGUI();
 		//testGetUserInput();
-		//testAddToBoard();
-		testGame();		//this one! - greedy AI
+		testGame();		//this - greedy AI
 		//aiGetMoves();
 
 		System.out.println("\nProgram Terminated");
@@ -91,7 +69,6 @@ public class Main {
 		int playerScore = 0;
 		int aiScore = 0;
 		GADDAG g = new GADDAG();
-		CountDownLatch doneSignal = new CountDownLatch(1);
 		GUI gui = new GUI();
 		Board board = new Board();
 		board.computeAnchors();
@@ -191,94 +168,31 @@ public class Main {
 		
 	}
 	
-//	public static void testLayeredGUI() {
-//		GUI g = new GUI();
-//		Scanner scan = new Scanner(System.in);
-//		
-//		char[] c = {'F', 'H', '_', 'E', 'Q', 'R'};
-//		g.refreshRack(c);
-//		
-//		while(true){
-//			String s = scan.nextLine();
-//			g.consoleWrite(s);
-//		}
-//		
-//	}
-	
-//	public static void testGetUserInput(){
-//		GADDAG gad = new GADDAG();
-//		Board board = new Board();
-//		board.placeLetter('A', 3, 4);
-//		board.computeAnchors();
-//		board.computeCrossSets(board, gad.getRoot());
-//		GUI g = new GUI();
-//		
-//		
-//		char[] c = {'F', 'H', '_', 'E', 'Q', 'R'};
-//		g.refreshRack(c);
-//		
-//		System.out.println("Waiting...");
-//		Move m;
-//		while((m = g.getUserInput()) == null);	//keep waiting for move until we get one
-//		g.resetUserMove();						//reset move to null so we don't accidentally get the same move twice
-//		m.printMove();
-//		Move m_comp = board.completeUserMove(m);
-//		m_comp.printMove();
-//		
-//		System.out.println(board.isMoveValid(m, gad.getRoot(), m_comp));
-//		
-//	}
-	
-//	public static void testAddToBoard(){
-//		Board board = new Board();
-//		GUI g = new GUI();
-//		Move m = new Move();
-//		m.addPlay(7, 7, 'A');
-//		m.addPlay(7, 8, 'B');
-//		
-//		g.addToBoard(m);
-//	}
-	
-	public static void testLetterbag(){
-		System.out.println("*****Letterbag Test*****\n");
-		Letterbag l = new Letterbag();
-		while(l.hasLetters()) {
-			char t = l.draw();
-			System.out.println("Letter: " + t + " | Value: " + Tile.valueOf(t));
-		}
+	public static void testGetUserInput(){
+		GADDAG gad = new GADDAG();
+		Board board = new Board();
+		board.placeLetter('A', 3, 4);
+		board.computeAnchors();
+		board.computeCrossSets(board, gad.getRoot());
+		GUI g = new GUI();
+		
+		
+		char[] c = {'F', 'H', '_', 'E', 'Q', 'R'};
+		g.refreshRack(c);
+		
+		System.out.println("Waiting...");
+		Move m;
+		while((m = g.getUserInput()) == null);	//keep waiting for move until we get one
+		g.resetUserMove();						//reset move to null so we don't accidentally get the same move twice
+		m.printMove();
+		Move m_comp = board.completeUserMove(m);
+		m_comp.printMove();
+		
+		System.out.println(board.isMoveValid(m, gad.getRoot(), m_comp));
+		
 	}
 	
-	//test GUI and console writing function
-//	public static void testGUI(){
-//		System.out.println("*****GUI Test*****\n");
-//		GUI g = new GUI();
-//		Scanner scan = new Scanner(System.in);
-//		while(true){
-//			String s = scan.nextLine();
-//			g.consoleWrite(s);
-//		}
-//	}
-	
-	public static void testCheckWords() {
-		System.out.println("*****Check Words Test*****\n");
-		GADDAG test = new GADDAG();
-		Scanner scan = new Scanner(System.in);
-		while (scan.hasNext()) {
-			String s = scan.next().toUpperCase();
-	    	System.out.println("Checking word: " + s + " || Result: " + test.getRoot().contains(s));
-	    }
-	}
-	
-	public static void testTextToUppercase(){
-		File f = new File("text//OSPD1.txt");
-		Utilities.upperCase(f, "OSPD.txt");
-	}
-	
-	public static void testBoard() {
-		Board b = new Board();
-		b.print();
-	}
-	
+
 	//allows traversal of GADDAG by inputing transition letters
 	public static void testTraverseGADDAG(){
 		GADDAG test = new GADDAG();
@@ -303,65 +217,6 @@ public class Main {
 				e.printStackTrace();
 			}
 		}
-	}
-	
-	public static void testCheckAllWords(){
-		System.out.println("*****Test Check All Words****\n");
-		GADDAG test = new GADDAG();
-		try {
-			Scanner in = new Scanner(new File("text//OSPD.txt"));
-			boolean exist;
-			while(in.hasNextLine()){
-				String s = in.nextLine().toUpperCase();
-				exist = test.rootMin.contains(s);
-				if(!exist)
-					System.out.println("Checking word: " + s + " || Result: " + exist);
-			}
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}
-	}
-	
-//	public static void testGUIRack(){
-//		GUI g = new GUI();
-//		char[] c = {'f', 'h', 'x', 'e', 'q', 'r'};
-//		g.refreshRack(c);
-//	}
-	
-	public static void testPlaceLetter(){
-		Board b = new Board();
-		b.print();
-		b.placeLetter('A', 7, 7);
-		b.print();
-	}
-	
-	public static void testPlaceTile2(){
-		Board b = new Board();
-		b.print();
-		b.placeLetter('B', 7, 7);
-		b.print();
-	}
-	
-	public static void testMove(){
-		Board board = new Board();
-		board.print();
-		
-		//make a move to be played
-		Move move = new Move();
-		//move.addPlay(c, 7, 7, board);
-		//move.addPlay(a, 8, 7, board);
-		//move.addPlay(t, 9, 7, board);
-		
-		System.out.println("move created");
-		
-		board.computeAnchors();
-		board.printAnchors();
-	}
-	
-	public static void testTileRackImage(){
-		Rack r = new Rack();
-		r.add('A');
-		r.print();
 	}
 	
 	//computes moves with empty board
@@ -424,21 +279,6 @@ public class Main {
 				System.out.println("Tile: " + p.letter + " | X: " + p.x + " |Y: " + p.y);
 			}
 		}
-	}
-
-	public static void testComputeCrossSets(){
-		Board board = new Board();
-		GADDAG g = new GADDAG();
-		board.computeAnchors();
-		board.printAnchors();
-		board.printNumCrossSets();
-		board.placeLetter('R', 7, 7);
-		board.print();
-		board.computeAnchors();
-		board.printAnchors();
-		
-		board.computeCrossSets(board, g.getRoot());
-		board.printNumCrossSets();
 	}
 	
 	//tests PA_ABLE for Y and R, tiles either side
@@ -570,18 +410,5 @@ public class Main {
 		board.computeAnchors();
 		board.print();
 		board.printAnchors();
-		
-		
-	}
-	
-	public static void test(){
-		Board board = new Board();
-		GADDAG g = new GADDAG();
-		List<Character> rack = new ArrayList<Character>();
-		rack.add('A');
-		rack.add('C');
-		rack.add('T');
-		rack.add('S');
-		
 	}
 }

@@ -33,7 +33,7 @@ public enum Tile {
 		return Tile.valueOf(c).score;
 	}
 	
-	
+	//*use in GUI to make code cleaner
 	private Image getImg(char l){
 		return new ImageIcon("img//letters//" + Character.toString(l).toUpperCase() + ".tiff").getImage().getScaledInstance(35, 35, Image.SCALE_DEFAULT);
 	}

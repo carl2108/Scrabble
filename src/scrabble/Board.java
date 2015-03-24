@@ -65,6 +65,8 @@ public class Board {
 	}
 	
 	public Square square(int i, int j) {
+		if(i >= width || j >= height || i < 0 || j < 0)
+			return new Square("__", 999, 999);	//handles out of bounds square calls
 		return square[i][j];
 	}
 	
@@ -78,9 +80,9 @@ public class Board {
 
 	private boolean isValidAnchor(int i, int j) {
 		if (!this.hasTile(i, j)) {
-//			if (i == 15 / 2 && j == 15 / 2) {
-//				return true;
-//			}
+			if (i == width/2 && j == height/2) {
+				return true;
+			}
 			if (hasTile(i - 1, j) || hasTile(i + 1, j) || hasTile(i, j + 1)
 					|| hasTile(i, j - 1)) {
 				return true;
@@ -120,7 +122,7 @@ public class Board {
 		System.out.println();
 	}
 	
-	public void printNumCrossSets(Board board){
+	public void printNumCrossSets(){
 		System.out.print("Horizontal\n   ");
 		for(int x=0; x<15; x++)
 			System.out.print(" " + x);
@@ -133,7 +135,7 @@ public class Board {
 			System.out.print(temp + "|");
 			
 			for(int i=0; i<15; i++){
-				System.out.print(" " + board.square(i, j).getLegalHorizontalSet().size());
+				System.out.print(" " + square(i, j).getLegalHorizontalSet().size());
 			}
 			System.out.println();
 		}
@@ -151,7 +153,7 @@ public class Board {
 			System.out.print(temp + "|");
 			
 			for(int i=0; i<15; i++){
-				System.out.print(" " + board.square(i, j).getLegalVerticalSet().size());
+				System.out.print(" " + square(i, j).getLegalVerticalSet().size());
 			}
 			System.out.println();
 		}
@@ -318,28 +320,39 @@ public class Board {
 				continue;
 			else if(square[p.x][p.y].isAnchor()){	
 				int tempScore = 0;	//accumulated score of other words this play has made
+				boolean other = false;
 				int l = p.x - 1;
 				int r = p.x + 1;
 				int u = p.y - 1;
 				int d = p.y + 1;
-				while(square[l][p.y].hasTile()){	//while tile to left
+				while(square(l, p.y).hasTile()){	//while tile to left
 					tempScore += Tile.getScore(square[l][p.y].getLetter());
 					l--;
+					other = true;
 				}
-				while(square[r][p.y].hasTile()){	//while tile to right
+				while(square(r, p.y).hasTile()){	//while tile to right
 					tempScore += Tile.getScore(square[r][p.y].getLetter());
 					r++;
+					other = true;
 				}
-				while(square[p.x][d].hasTile()){	//while tile to down
+				while(square(p.x, d).hasTile()){	//while tile to down
 					tempScore += Tile.getScore(square[p.x][d].getLetter());
 					d++;
+					other = true;
 				}
-				while(square[p.x][u].hasTile()){	//while tile to up
+				while(square(p.x, u).hasTile()){	//while tile to up
 					tempScore += Tile.getScore(square[p.x][u].getLetter());
 					u--;
+					other = true;
 				}
 				tempScore += Tile.getScore(p.letter)*square[p.x][p.y].getLetterMultiplier();	//combine these 2 lines
-				score += tempScore*square[p.x][p.y].getWordMultiplier();
+				if(other){
+					tempScore = tempScore*square[p.x][p.y].getWordMultiplier();
+					score += tempScore;
+				}
+				
+				wordMult = wordMult*square[p.x][p.y].getWordMultiplier();
+				wordScore += Tile.getScore(p.letter)*square[p.x][p.y].getLetterMultiplier();
 			}
 			else{
 				wordMult = wordMult*square[p.x][p.y].getWordMultiplier();
@@ -349,18 +362,65 @@ public class Board {
 		return score += wordScore*wordMult;
 	}
 	
-	public boolean isMoveValid(Move m){
-		//*check if word is in the dictionary first! - move should be ordered
+	public boolean isMoveValid(Move m, GADDAGNode root, Move comp){
 		boolean hasAnchor = false;
+		String word = new String();
+		for(Play p : comp)
+			word = word + p.letter;
 		for(Play p : m){
+			//word = word + p.letter;
 			if(square[p.x][p.y].hasTile())
 				return false;
 			else if(square[p.x][p.y].isAnchor()){
 				hasAnchor = true;
 				if(!square[p.x][p.y].legalHorizontal(p.letter) && !square[p.x][p.y].legalVertical(p.letter))
-					continue;
+					return false;
 			}
 		}
-		return hasAnchor;
+		
+		return hasAnchor && root.contains(word);
+	}
+	
+	public Move completeUserMove(Move m){
+		Move newMove = new Move(m);
+		if(m.isHorizontal(this)){
+			int y = m.plays.get(0).y;
+			int prev = m.plays.get(0).x - 1;
+			while(hasTile(prev, y)){
+				newMove.addPlay(prev, y, square(prev, y).letter, 0);
+				prev--;
+			}
+			int pos = 0;
+			for(Play p : m){
+				int next = p.x + 1;
+				pos++;
+				while(hasTile(next, y)){
+					newMove.addPlay(next, y, square(next, y).getLetter(), pos);
+					next++;
+					pos++;
+				}
+			}
+		}
+		else {
+			int x = m.plays.get(0).x;
+			int prev = m.plays.get(0).y - 1;
+			while(hasTile(x, prev)){
+				newMove.addPlay(x, prev, square(x, prev).letter, 0);
+				prev--;
+			}
+			int pos = 0;
+			for(Play p : m){
+				int next = p.y + 1;
+				pos++;
+				while(hasTile(x, next)){
+					newMove.addPlay(x, next, square(x, next).getLetter(), pos);
+					next++;
+					pos++;
+				}
+			}
+		}
+		//System.out.println("Completed: ");
+		//newMove.printMove();
+		return newMove;
 	}
 }

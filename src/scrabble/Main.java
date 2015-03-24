@@ -11,12 +11,13 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.Stack;
+import java.util.concurrent.CountDownLatch;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 public class Main {
 
-	public static void main(String[] args) throws FileNotFoundException {	
+	public static void main(String[] args) throws FileNotFoundException, InterruptedException {	
 		//testLetterbag();
 		//testCheckWords();
 		//testBoard();
@@ -37,39 +38,206 @@ public class Main {
 		//testCalculateScore();
 		//testCalculateScore2();
 		//testLayeredGUI();
-		testGetUserMove();
+		//testGetUserInput();
+		//testAddToBoard();
+		testGame();		//this one! - greedy AI
+		//aiGetMoves();
 
 		System.out.println("\nProgram Terminated");
 	}
 	
-	public static void testLayeredGUI() {
-		GUI g = new GUI();
-		Scanner scan = new Scanner(System.in);
+	public static void aiGetMoves(){
+		GADDAG g = new GADDAG();
+		Board board = new Board();
+		board.computeAnchors();
+		board.computeCrossSets(board, g.getRoot());
+		//Letterbag l = new Letterbag();
 		
-		char[] c = {'F', 'H', '_', 'E', 'Q', 'R'};
-		g.refreshRack(c);
+		//char[] rackArray = {'C', 'A', 'R', 'E', 'R', 'S'};
+		ArrayList<Tile> rack = new ArrayList<Tile>();
+		rack.add(Tile.valueOf('C'));
+		rack.add(Tile.valueOf('A'));
+		rack.add(Tile.valueOf('R'));
+		rack.add(Tile.valueOf('E'));
+		rack.add(Tile.valueOf('R'));
+		rack.add(Tile.valueOf('S'));
 		
-		while(true){
-			String s = scan.nextLine();
-			g.consoleWrite(s);
+		List<Move> moves = g.findWords(g.getRoot(), rack, board);
+		int max = 0;
+		Move move_max = new Move();
+		System.out.println("Moves: " + moves.size());
+		for(Move m: moves){
+			int score = board.calculateScore(m);
+			if(score > max){
+				max = score;
+				move_max = m;
+			}
+			System.out.println("New Move-----\nScore: " + score);
+			for(Play p: m){
+				System.out.println("Tile: " + p.letter + " | X: " + p.x + " |Y: " + p.y);
+			}
 		}
+		
+		System.out.println("Best move: ");
+		for(Play p : move_max)
+			System.out.println("Tile: " + p.letter + " | X: " + p.x + " |Y: " + p.y);
+		System.out.println("Highest Score: " + max);
 		
 	}
 	
-	public static void testGetUserMove(){
+	public static void testGame() throws InterruptedException {
+		//set up game objects and initialize board
+		boolean playerTurn = true;
+		int playerScore = 0;
+		int aiScore = 0;
+		GADDAG g = new GADDAG();
+		CountDownLatch doneSignal = new CountDownLatch(1);
+		GUI gui = new GUI();
 		Board board = new Board();
-		GUI g = new GUI();
+		board.computeAnchors();
+		board.computeCrossSets(board, g.getRoot());
+		board.print();
+		board.printAnchors();
+		board.printNumCrossSets();
+		Letterbag l = new Letterbag();
 		
-		char[] c = {'F', 'H', '_', 'E', 'Q', 'R'};
-		g.refreshRack(c);
+		//set up player objects, racks and initialize
+		Player human = new Player("Player");
+		Player ai = new Player("Comp");
+		l.fillRack(human.rack);		//fill player racks
+		l.fillRack(ai.rack);
+		human.rack.print();
+		gui.refreshRack(human.rack.myRack);	//push human rack to the GUI
+		ai.rack.print();
 		
-		System.out.println("Waiting...");
-		Move m;
-		while((m = g.getUserMove()) == null);	//keep asking for move until we have one
-		g.resetUserMove();
-		m.printMove();
+		while(l.hasLetters() || (human.rack.myRack.length > 0 && ai.rack.myRack.length > 0)){	//*till end of game!
+			if(playerTurn){	//process players turn
+				System.out.println("Player Turn");
+				//gui.consoleWrite("Players turn...");
+				Move m = gui.getUserInput();
+				while(m == null){	//keep waiting for move until we get one
+					m = gui.getUserInput();
+					//System.out.print();
+				}
+				System.out.println("Got user move");
+				gui.resetUserMove();
+				//reset move to null so we don't accidentally get the same move twice
+				m.printMove();
+				Move m_comp = board.completeUserMove(m);	//*currently need to pass isMoveValid() complete and incomplete play - have bool/delim in play to identify if it already exists on the board
+				//m_comp.printMove();
+				System.out.println("Completed user move");
+				if(board.isMoveValid(m, g.getRoot(), m_comp)){	//if the move is valid - play it
+					System.out.println("Valid user move");
+					String word = new String();
+					for(Play p : m_comp)	//get the word as a string
+						word = word + p.letter;
+					
+					int score = board.calculateScore(m_comp);	//move score
+					playerScore += score;				//add to player score
+					System.out.println("Played: " + word + " | Score: " + score);
+					board.placeMove(m_comp);			//place move on the board - print via board.print
+					board.print();
+					board.computeAnchors();				//*shouldn't have to recompute all anchors and cross sets, just ones that are effected by last move
+					board.computeCrossSets(board, g.getRoot());
+					playerTurn = false;		//set to computers turn
+					human.rack.removeAll(word.toCharArray());
+					l.fillRack(human.rack);
+					gui.refreshRack(human.rack.myRack);
+					gui.addToBoard(m);
+				}
+				else {	//else if move is invalid - try again
+					System.out.println("Invalid user move - try again");
+					gui.resetBoard();
+					gui.resetUserMove();
+					
+				}
+			}
+			else {	////process AI turn
+				System.out.println("Computer Turn");
+				ArrayList<Tile> rack = new ArrayList<Tile>();		//**convert rack - fix this
+				for(Character c : ai.rack.myRack){
+					if(c != '_')
+						rack.add(Tile.valueOf(c));
+				}
+				List<Move> moves = g.findWords(g.getRoot(), rack, board);		//find words
+				
+				int max = 0;
+				Move move_max = new Move();								//get highest
+				for(Move m: moves){
+					int score = board.calculateScore(m);
+					if(score > max){
+						max = score;
+						move_max = m;
+					}
+				}
+				System.out.println("Best move score: " + max);
+				String word = new String();
+				for(Play p : move_max){
+					word = word + p.letter;
+					//System.out.println("Tile: " + p.letter + " | X: " + p.x + " |Y: " + p.y);
+				}
+				
+				board.placeMove(move_max);
+				board.computeAnchors();
+				board.computeCrossSets(board, g.getRoot());
+				gui.addToBoard(move_max);
+				ai.rack.removeAll(word.toCharArray());
+				l.fillRack(ai.rack);
+				playerTurn = true;
+			}
+		}
+		
+		System.out.println("GAME OVER\nPlayer: " + playerScore + " Computer: " + aiScore);
 		
 	}
+	
+//	public static void testLayeredGUI() {
+//		GUI g = new GUI();
+//		Scanner scan = new Scanner(System.in);
+//		
+//		char[] c = {'F', 'H', '_', 'E', 'Q', 'R'};
+//		g.refreshRack(c);
+//		
+//		while(true){
+//			String s = scan.nextLine();
+//			g.consoleWrite(s);
+//		}
+//		
+//	}
+	
+//	public static void testGetUserInput(){
+//		GADDAG gad = new GADDAG();
+//		Board board = new Board();
+//		board.placeLetter('A', 3, 4);
+//		board.computeAnchors();
+//		board.computeCrossSets(board, gad.getRoot());
+//		GUI g = new GUI();
+//		
+//		
+//		char[] c = {'F', 'H', '_', 'E', 'Q', 'R'};
+//		g.refreshRack(c);
+//		
+//		System.out.println("Waiting...");
+//		Move m;
+//		while((m = g.getUserInput()) == null);	//keep waiting for move until we get one
+//		g.resetUserMove();						//reset move to null so we don't accidentally get the same move twice
+//		m.printMove();
+//		Move m_comp = board.completeUserMove(m);
+//		m_comp.printMove();
+//		
+//		System.out.println(board.isMoveValid(m, gad.getRoot(), m_comp));
+//		
+//	}
+	
+//	public static void testAddToBoard(){
+//		Board board = new Board();
+//		GUI g = new GUI();
+//		Move m = new Move();
+//		m.addPlay(7, 7, 'A');
+//		m.addPlay(7, 8, 'B');
+//		
+//		g.addToBoard(m);
+//	}
 	
 	public static void testLetterbag(){
 		System.out.println("*****Letterbag Test*****\n");
@@ -81,15 +249,15 @@ public class Main {
 	}
 	
 	//test GUI and console writing function
-	public static void testGUI(){
-		System.out.println("*****GUI Test*****\n");
-		GUI g = new GUI();
-		Scanner scan = new Scanner(System.in);
-		while(true){
-			String s = scan.nextLine();
-			g.consoleWrite(s);
-		}
-	}
+//	public static void testGUI(){
+//		System.out.println("*****GUI Test*****\n");
+//		GUI g = new GUI();
+//		Scanner scan = new Scanner(System.in);
+//		while(true){
+//			String s = scan.nextLine();
+//			g.consoleWrite(s);
+//		}
+//	}
 	
 	public static void testCheckWords() {
 		System.out.println("*****Check Words Test*****\n");
@@ -140,7 +308,6 @@ public class Main {
 	public static void testCheckAllWords(){
 		System.out.println("*****Test Check All Words****\n");
 		GADDAG test = new GADDAG();
-		List<String> missing = new ArrayList<String>();
 		try {
 			Scanner in = new Scanner(new File("text//OSPD.txt"));
 			boolean exist;
@@ -155,11 +322,11 @@ public class Main {
 		}
 	}
 	
-	public static void testGUIRack(){
-		GUI g = new GUI();
-		char[] c = {'f', 'h', 'x', 'e', 'q', 'r'};
-		g.refreshRack(c);
-	}
+//	public static void testGUIRack(){
+//		GUI g = new GUI();
+//		char[] c = {'f', 'h', 'x', 'e', 'q', 'r'};
+//		g.refreshRack(c);
+//	}
 	
 	public static void testPlaceLetter(){
 		Board b = new Board();
@@ -211,9 +378,9 @@ public class Main {
 		board.computeAnchors();
 		board.printAnchors();
 		board.computeCrossSets(board, g.getRoot());
-		board.printNumCrossSets(board);		//shouldn't be any
+		board.printNumCrossSets();		//shouldn't be any
 		
-		Set<Move> moves = g.findWords(g.getRoot(), rack, board);
+		List<Move> moves = g.findWords(g.getRoot(), rack, board);
 		System.out.println("Moves!");
 		for(Move m: moves){
 			System.out.println("New Move-------");
@@ -230,13 +397,14 @@ public class Main {
 
 		//board.placeLetter('C', 6, 7);
 		//board.placeLetter('N', 7, 7);
-		board.placeLetter('R', 7, 7);
+		board.placeLetter('M', 7, 7);
 		
 		ArrayList<Tile> rack = new ArrayList<Tile>();
 		//rack.add(Tile.valueOf('E'));
-		rack.add(Tile.valueOf('A'));
-		rack.add(Tile.valueOf('T'));
-		rack.add(Tile.valueOf('S'));
+		rack.add(Tile.valueOf('M'));
+		rack.add(Tile.valueOf('O'));
+		rack.add(Tile.valueOf('N'));
+		rack.add(Tile.valueOf('K'));
 		//rack.print();
 		
 		System.out.println("Board");
@@ -246,9 +414,9 @@ public class Main {
 		board.printAnchors();
 		board.computeCrossSets(board, g.getRoot());
 		System.out.println("Cross Set Numbers:");
-		board.printNumCrossSets(board);
+		board.printNumCrossSets();
 		
-		Set<Move> moves = g.findWords(g.getRoot(), rack, board);
+		List<Move> moves = g.findWords(g.getRoot(), rack, board);
 		System.out.println("Moves: " + moves.size());
 		for(Move m: moves){
 			System.out.println("New Move-------");
@@ -263,14 +431,14 @@ public class Main {
 		GADDAG g = new GADDAG();
 		board.computeAnchors();
 		board.printAnchors();
-		board.printNumCrossSets(board);
+		board.printNumCrossSets();
 		board.placeLetter('R', 7, 7);
 		board.print();
 		board.computeAnchors();
 		board.printAnchors();
 		
 		board.computeCrossSets(board, g.getRoot());
-		board.printNumCrossSets(board);
+		board.printNumCrossSets();
 	}
 	
 	//tests PA_ABLE for Y and R, tiles either side
@@ -285,7 +453,7 @@ public class Main {
 		board.placeLetter('E', 11, 7);
 		board.print();
 		board.computeCrossSets(board, g.getRoot());
-		board.printNumCrossSets(board);
+		board.printNumCrossSets();
 	}
 	
 	//try using full dictionary and give 6 letters
@@ -311,14 +479,14 @@ public class Main {
 		board.printAnchors();
 		board.computeCrossSets(board, g.getRoot());
 		System.out.println("Cross Set Numbers:");
-		board.printNumCrossSets(board);
+		board.printNumCrossSets();
 		
 		//System pause!
 		Scanner scan = new Scanner(System.in);
 		System.out.println("Pause...");
 		String s = scan.nextLine();
 		
-		Set<Move> moves = g.findWords(g.getRoot(), rack, board);
+		List<Move> moves = g.findWords(g.getRoot(), rack, board);
 		System.out.println("Moves: " + moves.size());
 		for(Move m: moves){
 			System.out.println("New Move-------");
@@ -330,17 +498,22 @@ public class Main {
 	
 	public static void testCalculateScore(){
 		Board board = new Board();
-		board.placeLetter('A', 7, 7);
+		//board.placeLetter('A', 7, 7);
 		board.print();
+		board.computeAnchors();
 		
-		Play p1 = new Play(6, 7, 'Q');
-		Play p2 = new Play(5, 7, 'B');
-		Play p3 = new Play(7, 7, 'A');
+		Play p1 = new Play(7, 7, 'S');
+		Play p2 = new Play(7, 8, 'E');
+		Play p3 = new Play(7, 9, 'R');
+		Play p4 = new Play(7, 10, 'A');
+		Play p5 = new Play(7, 11, 'C');
 		
 		Move m = new Move();
 		m.addPlay(p1);
 		m.addPlay(p2);
 		m.addPlay(p3);
+		m.addPlay(p4);
+		m.addPlay(p5);
 		
 		System.out.println("Score: " + board.calculateScore(m));
 	}

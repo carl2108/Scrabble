@@ -14,13 +14,13 @@ public class Letterbag {
 	public Letterbag() {
 		st = new Stack<Character>();
 		
-		File f = new File("text//letters.txt");		//Read letters from text file provided
+		File f = new File("text//testLetters.txt");		//Read letters from text file provided
 		try {
 			Scanner scan = new Scanner(f).useDelimiter(" ");
 			
 			while(scan.hasNext()) {
 				char c = scan.next().charAt(0);
-				int throwAway = scan.nextInt();	//remove this later!
+				//int throwAway = scan.nextInt();	//remove this later!
 				st.push(c);
 			}
 		} catch (FileNotFoundException e) {
@@ -50,5 +50,14 @@ public class Letterbag {
 	
 	public boolean hasLetters(){
 		return !st.empty();
+	}
+	
+	public void fillRack(Rack r){
+		int i=0;
+		for(i=0; i<6; i++){
+			if(r.myRack[i] == '_' && hasLetters()){
+				r.add(draw());
+			}
+		}
 	}
 }

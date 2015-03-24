@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Stack;
+import java.util.concurrent.CountDownLatch;
 
 import javax.imageio.ImageIO;
 import javax.swing.AbstractButton;
@@ -113,16 +114,7 @@ public class GUI implements Runnable, MouseListener{
 				boardFrame.add(grid[i][j]);
 			}
 		}
-		//don't need
-		Image letterImage;
-		try {
-			letterImage = ImageIO.read(new File("img/letters/A.tiff")).getScaledInstance(35, 35, Image.SCALE_DEFAULT);
-			grid[3][4].setIcon(new ImageIcon(letterImage));
-			System.out.println("Added");
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		
+		//console window
 		txtConsole = new JTextPane();
 		txtConsole.setEditable(false);	
 		txtConsole.setText("Console...\n");
@@ -168,11 +160,13 @@ public class GUI implements Runnable, MouseListener{
 		boardFrame.addMouseListener(this);
 		clearButton.addActionListener(new ActionListener() { 
 		    public void actionPerformed(ActionEvent e) { 
+		    	System.out.println("Clear pressed");
 		        resetBoard();
 		    } 
 		});
 		playButton.addActionListener(new ActionListener() { 
 		    public void actionPerformed(ActionEvent e) { 
+		    	System.out.println("Play pressed");
 		        setUserMove();
 		    } 
 		});
@@ -257,8 +251,7 @@ public class GUI implements Runnable, MouseListener{
 											refreshRack(rack);
 											return;
 										}
-									}
-									System.out.println("Derp :P");	
+									}	
 								} catch (IOException error) {
 									error.printStackTrace();
 								}
@@ -269,10 +262,9 @@ public class GUI implements Runnable, MouseListener{
 				}
 			}
 		}
-		else
-			System.out.println("Wut?!?");
 	}
 	
+	//resets a move, returning all letters placed on the board to the player
 	public void resetBoard(){
 		Stack<Character> recoveredLetters = new Stack<Character>();
 		for(int j=0; j<15; j++){
@@ -290,29 +282,50 @@ public class GUI implements Runnable, MouseListener{
 			if(rack[l] == '_')
 				rack[l] = recoveredLetters.pop();
 		}
+		Utilities.printCharArray(rack);
 		refreshRack(rack);
 	}
 	
 	public void setUserMove(){
+		//System.out.println("Setting user move");
 		Move myMove = new Move();
+		//System.out.println("My Move: ");
+		//myMove.printMove();
 		for(int j=0; j<15; j++){	
 			for(int i=0; i<15; i++){
 				if(moveMask[i][j] != '_'){
 					Play p = new Play(i, j, moveMask[i][j]);
 					myMove.addPlay(p);
-					moveMask[i][j] = '_';
+					//moveMask[i][j] = '_';
 				}
 			}
 		}
+		
 		userMove = myMove;
+		//System.out.println("Done setting user move");
+		//this.userMove.printMove();
 	}
 	
-	public Move getUserMove(){
+	public Move getUserInput(){
 		return userMove;
 	}
 	
 	public void resetUserMove(){
 		userMove = null;
+	}
+	
+	public void addToBoard(Move m){
+		for(Play p : m){
+			try {					//highlight selected letter image
+				Image letterImage = ImageIO.read(new File("img/letters/" + Character.toUpperCase(p.letter) + ".tiff")).getScaledInstance(35, 35, Image.SCALE_DEFAULT);
+				grid[p.x][p.y].setIcon(new ImageIcon(letterImage));
+				grid[p.x][p.y].setVisible(true);
+				moveMask[p.x][p.y] = '_';	
+			} catch (IOException error) {
+				error.printStackTrace();
+			}
+			
+		}
 	}
 	
 	//unused mouse events

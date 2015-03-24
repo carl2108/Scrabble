@@ -45,4 +45,10 @@ public class Utilities {
 		return test;
 	}
 	
+	public static void printCharArray(char[] c){
+		for(Character l : c)
+			System.out.print(l);
+		System.out.println();
+	}
+	
 }

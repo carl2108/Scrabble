@@ -93,6 +93,7 @@ public class Main {
 				//gui.consoleWrite("Players turn...");
 				Move m = gui.getUserInput();
 				while(m == null){	//keep waiting for move until we get one
+					Thread.sleep(100);
 					m = gui.getUserInput();
 					//System.out.print();
 				}

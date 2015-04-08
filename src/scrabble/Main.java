@@ -2,10 +2,16 @@ package scrabble;
 
 // pass to VM arguments under run configuration to set program memory allocation "-Xmx1024m"
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Scanner;
+import java.util.Set;
 
 public class Main {
 
@@ -18,10 +24,26 @@ public class Main {
 		//testCalculateScore();
 		//testCalculateScore2();
 		//testGetUserInput();
-		testGame();		//this - greedy AI
+		//testGame();		//this - greedy AI
 		//aiGetMoves();
-
+		//testHeuristicCalc();
+		
+		
 		System.out.println("\nProgram Terminated");
+	}
+	
+	public static void testHeuristicCalc(){
+		AI ai = new AI();
+		
+		ArrayList<Tile> rackLeave = new ArrayList<Tile>();
+		rackLeave.add(Tile.valueOf('E'));
+		rackLeave.add(Tile.valueOf('E'));
+		rackLeave.add(Tile.valueOf('N'));
+		rackLeave.add(Tile.valueOf('R'));
+		rackLeave.add(Tile.valueOf('S'));
+		
+		float score = ai.calcCost(12, rackLeave);
+		System.out.println(score);
 	}
 	
 	public static void aiGetMoves(){

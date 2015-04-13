@@ -38,12 +38,23 @@ public class Rack {
 	public boolean removeAll(char[] all){
 		for(Character c : all){
 			if(!remove(c)){
-				System.out.println("Failed to remove " + c);
+				//System.out.println("Failed to remove " + c);
 				//return false;
 			}
 		}
 		return true;
 	}
+	
+	//remove all the letters in the array - given move
+		public boolean removeAll(Move m){
+			for(Play p : m.plays){
+				if(!remove(p.letter)){
+					//System.out.println("Failed to remove " + p.letter);
+					//return false;
+				}
+			}
+			return true;
+		}
 	
 	//find and remove the given letter from the rack
 	public boolean remove(char c){

@@ -179,7 +179,7 @@ public class Board {
 		GADDAGNode current = root;
 		//if it has a tile either side
 		if (hasTile(i - 1, j) && hasTile(i + 1, j)) {
-			System.out.println(i + " " + j + " tile either side");
+			//System.out.println(i + " " + j + " tile either side");
 			int x = i - 1;
 			//go to end of prefix
 			while (hasTile(x, j)) {
@@ -196,7 +196,7 @@ public class Board {
 				GADDAGNode base = current;
 				//char[] alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
 				for (char c : Utilities.alphabetSet()) {
-					System.out.println("Trying: " + c);
+					//System.out.println("Trying: " + c);
 					current = base;
 					current = current.get(c);
 					x = i + 1;

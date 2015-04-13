@@ -11,10 +11,12 @@ public class Move implements Iterable<Play> {
 
 	public Move() {
 		plays = new ArrayList<Play>();
+		score = -999;
 	}
 
 	public Move(Move other) {
 		this.plays = new ArrayList<Play>(other.plays);
+		this.score = other.score;
 	}
 	
 	public void addPlay(int x, int y, char l){
@@ -86,4 +88,9 @@ public class Move implements Iterable<Play> {
 			return true;
 		else return false;
 	}
+	
+	public String toString(){
+		return this.plays.toString() + score;
+	}
+	
 }

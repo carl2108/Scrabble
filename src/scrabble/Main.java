@@ -5,6 +5,7 @@ package scrabble;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -25,11 +26,68 @@ public class Main {
 		//testCalculateScore2();
 		//testGetUserInput();
 		//testGame();		//this - greedy AI
-		//aiGetMoves();
+		aiGetMoves();
 		//testHeuristicCalc();
-		
+		//testProbSearch();
 		
 		System.out.println("\nProgram Terminated");
+	}
+	
+	public static void testProbSearch(){
+		
+		GADDAG g = new GADDAG();
+		Board b = new Board();
+		b.placeLetter('A', 7, 7);
+		b.placeLetter('S', 8, 7);
+		b.placeLetter('S', 9, 7);
+		b.computeAnchors();
+		b.computeCrossSets(b, g.getRoot());
+		
+		Letterbag l = new Letterbag();
+		Rack r = new Rack();
+		l.fillRack(r);
+		
+		ArrayList<Tile> rack = new ArrayList<Tile>();		//**convert rack - fix this
+		for(Character c : r.myRack){
+			if(c != '_')
+				rack.add(Tile.valueOf(c));
+		}
+		
+		List<Move> moves = g.findWords(g.getRoot(), rack, b);		//find all moves
+
+		Move topMoves[] = new Move[5];
+		int topScore[] = {0, 0, 0, 0, 0};
+		
+		int bestGreedyScore = 0;
+		Move bestGreedyMove = new Move();
+		
+		for(Move m : moves){
+			m.score = b.calculateScore(m);
+			if(bestGreedyScore < m.score){
+				bestGreedyScore = m.score;
+				bestGreedyMove = m;
+			}
+			int i;
+			boolean top = false;
+			for(i=4; (i>=0 && m.score > topScore[i]); i--)	//find if move is in the top 5 and where
+				top = true;
+			
+			i++;
+			
+			if(top){		//store it in the top candidate moves
+				for(int p=4; p > i; p--){
+					topScore[p] = topScore[p-1];
+					topMoves[p] = topMoves[p-1];
+				}
+				topScore[i] = m.score;
+				topMoves[i] = m;
+			}
+		}
+		AI ai = new AI();
+		Move probSearchMove = ai.probSearchStart(2, b, l, moves, r, 0, g, 1);
+		
+		System.out.println("Greedy: " + bestGreedyMove + "\nProbSearch: " + probSearchMove);
+		
 	}
 	
 	public static void testHeuristicCalc(){
@@ -115,7 +173,7 @@ public class Main {
 				//gui.consoleWrite("Players turn...");
 				Move m = gui.getUserInput();
 				while(m == null){	//keep waiting for move until we get one
-					Thread.sleep(100);
+					Thread.sleep(100);		//**sleep to avoid concurrency issues - fix this with locking!
 					m = gui.getUserInput();
 					//System.out.print();
 				}

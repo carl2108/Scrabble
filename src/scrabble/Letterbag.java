@@ -14,7 +14,7 @@ public class Letterbag {
 	public Letterbag() {
 		st = new Stack<Character>();
 		
-		File f = new File("text//testLetters.txt");		//Read letters from text file provided
+		File f = new File("text//letters.txt");		//Read letters from text file provided
 		try {
 			Scanner scan = new Scanner(f).useDelimiter(" ");
 			

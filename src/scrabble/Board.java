@@ -357,6 +357,8 @@ public class Board {
 				wordScore += Tile.getScore(p.letter)*square[p.x][p.y].getLetterMultiplier();
 			}
 		}
+		if(m.bingo)
+			score += 50;
 		return score += wordScore*wordMult;
 	}
 	

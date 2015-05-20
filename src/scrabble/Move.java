@@ -8,6 +8,7 @@ public class Move implements Iterable<Play> {
 
 	List<Play> plays;
 	int score;
+	boolean bingo = false;
 
 	public Move() {
 		plays = new ArrayList<Play>();
@@ -17,6 +18,7 @@ public class Move implements Iterable<Play> {
 	public Move(Move other) {
 		this.plays = new ArrayList<Play>(other.plays);
 		this.score = other.score;
+		this.bingo = other.bingo;
 	}
 	
 	public void addPlay(int x, int y, char l){

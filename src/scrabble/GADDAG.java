@@ -2,6 +2,9 @@ package scrabble;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -12,12 +15,13 @@ import java.util.Set;
 public class GADDAG{
 	GADDAGNode rootMin;
 	long buildtime;
+	long moveTime;
 
 	public GADDAG() {
 		buildtime = System.currentTimeMillis();
 		rootMin = null;
 
-		File file = new File("text//OSPD.txt");
+		File file = new File("text//SOWPODS.txt");
 		try {
 			rootMin = buildGADDAG(new Scanner(file));
 		} catch (FileNotFoundException e) {
@@ -169,6 +173,7 @@ public class GADDAG{
 
 	public List<Move> findWords(GADDAGNode root, ArrayList<Tile> rack /*change to Rack object?*/, Board board) {
 		List<Move> moves = new ArrayList<Move>();
+		long startTime = System.currentTimeMillis();
 		for(int j=0; j<Board.height; j++){
 			for(int i=0; i<Board.width; i++){
 				if(board.square(i, j).isAnchor()){	//if square is an anchor + *hasnt been used in prev gen
@@ -177,6 +182,45 @@ public class GADDAG{
 				}
 			}
 		}
+		long endTime = System.currentTimeMillis();
+		System.out.println("Search Time: " + (endTime - startTime)/1000.0);
+		System.out.println("Search Length: " + moves.size());
+		
+		File originalFile = new File("text/stats.txt");
+		Scanner scan;
+		try {
+			scan = new Scanner(originalFile);
+			int count = Integer.parseInt(scan.nextLine()) + 1;
+			int time = (int) (Integer.parseInt(scan.nextLine()) + (endTime - startTime));		//time in ms
+			int words = Integer.parseInt(scan.nextLine()) + moves.size();
+			
+			File tempFile = new File("tempfile.txt");
+	        PrintWriter pw = new PrintWriter(new FileWriter(tempFile));
+	        
+	        pw.println(count);
+	        pw.flush();
+	        pw.println(time);
+	        pw.flush();
+	        pw.println(words);
+	        pw.flush();
+	        pw.close();
+	        
+	        // Delete the original file
+	        if (!originalFile.delete()) 
+	            System.out.println("Could not delete file");
+	        
+	        // Rename the new file to the filename the original file had.
+	        if (!tempFile.renameTo(originalFile))
+	            System.out.println("Could not rename file");
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
 		return moves;
 	}
 
@@ -213,6 +257,8 @@ public class GADDAG{
 		if(offset <= 0){	//if making prefix
 			//if its a valid move ending record it
 			if(currNode.hasAsEnd(letter) && !board.square(anchorx + offset - 1, anchory).hasTile() && !board.square(anchorx + 1, anchory).hasTile()){
+				if(rack.isEmpty())
+					inMove.bingo = true;
 				recordMove(inMove, moves);
 				//System.out.println("YEAH!");
 			}
@@ -233,6 +279,8 @@ public class GADDAG{
 		else if(offset > 0){	//else if making suffix
 			//if its a valid move ending record it
 			if(currNode.hasAsEnd(letter) && !board.square(anchorx + offset + 1, anchory).hasTile()){
+				if(rack.isEmpty())
+					inMove.bingo = true;
 				recordMove(inMove, moves);
 				//System.out.println("Move found! 2");
 			}
@@ -278,6 +326,8 @@ public class GADDAG{
 		if(offset <= 0){	//if making prefix
 			//if its a valid move ending record it			
 			if(currNode.hasAsEnd(letter) && !board.square(anchorx + offset - 1, anchory).hasTile()  && !board.square(anchorx, anchory + 1).hasTile()){
+				if(rack.isEmpty())
+					inMove.bingo = true;
 				recordMove(inMove, moves);
 				//System.out.println("YEAH!");
 			}
@@ -297,6 +347,8 @@ public class GADDAG{
 		else if(offset > 0){	//else if making suffix
 			//if its a valid move ending record it
 			if(currNode.hasAsEnd(letter) && !board.square(anchorx, anchory + offset + 1).hasTile()){
+				if(rack.isEmpty())
+					inMove.bingo = true;
 				recordMove(inMove, moves);
 				//System.out.println("Move found! 2");
 			}

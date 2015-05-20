@@ -1,9 +1,12 @@
 package scrabble;
 
-// pass to VM arguments under run configuration to set program memory allocation "-Xmx1024m"
+// pass to VM arguments under run configuration to set program memory allocation "-Xmx512m"
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -25,8 +28,8 @@ public class Main {
 		//testCalculateScore();
 		//testCalculateScore2();
 		//testGetUserInput();
-		//testGame();		//this - greedy AI
-		aiGetMoves();
+		testGame1();		//this - greedy AI
+		//aiGetMoves();
 		//testHeuristicCalc();
 		//testProbSearch();
 		
@@ -89,6 +92,7 @@ public class Main {
 		System.out.println("Greedy: " + bestGreedyMove + "\nProbSearch: " + probSearchMove);
 		
 	}
+/*	*/
 	
 	public static void testHeuristicCalc(){
 		AI ai = new AI();
@@ -117,7 +121,7 @@ public class Main {
 		rack.add(Tile.valueOf('A'));
 		rack.add(Tile.valueOf('R'));
 		rack.add(Tile.valueOf('E'));
-		rack.add(Tile.valueOf('R'));
+		rack.add(Tile.valueOf('T'));
 		rack.add(Tile.valueOf('S'));
 		
 		List<Move> moves = g.findWords(g.getRoot(), rack, board);
@@ -140,15 +144,156 @@ public class Main {
 		for(Play p : move_max)
 			System.out.println("Tile: " + p.letter + " | X: " + p.x + " |Y: " + p.y);
 		System.out.println("Highest Score: " + max);
+		System.out.println("Number of moves: " + moves.size());
+		
+	}
+	
+	public static void testGame1() throws InterruptedException {
+		//set up game objects and initialize board
+		boolean playerTurn = true;//false
+		int playerScore = 0;
+		int aiScore = 0;
+		long before = Runtime.getRuntime().freeMemory();
+		GADDAG g = new GADDAG();
+		long after = Runtime.getRuntime().freeMemory();
+		System.out.println("Memory Diff: " + (before - after)/(1024.0*1024.0));
+		GUI gui = new GUI();
+		Board board = new Board();
+		board.placeLetter('P', 4, 7);
+		board.placeLetter('A', 5, 7);
+		
+		Play p1 = new Play(4, 7, 'P');
+		Play p2 = new Play(5, 7, 'A');
+		Move m1 = new Move();
+		m1.addPlay(p1);
+		m1.addPlay(p2);
+		gui.addToBoard(m1);
+		
+		Play q1 = new Play(7, 7, 'A');
+		Play q2 = new Play(8, 7, 'B');
+		Play q3 = new Play(9, 7, 'L');
+		Play q4 = new Play(10, 7, 'E');
+		
+		Move n1 = new Move();
+		n1.addPlay(q1);
+		n1.addPlay(q2);
+		n1.addPlay(q3);
+		n1.addPlay(q4);
+		gui.addToBoard(n1);
+		
+		board.computeAnchors();
+		board.computeCrossSets(board, g.getRoot());
+		board.print();
+		board.printAnchors();
+		board.printNumCrossSets();
+		Letterbag l = new Letterbag();
+		
+		//set up player objects, racks and initialize
+		Player human = new Player("Player");
+		Player ai = new Player("Comp");
+		l.fillRack(human.rack);		//fill player racks
+		l.fillRack(ai.rack);
+		human.rack.print();
+		gui.refreshRack(human.rack.myRack);	//push human rack to the GUI
+		ai.rack.print();
+		
+		while(l.hasLetters() || (human.rack.myRack.length > 0 && ai.rack.myRack.length > 0)){	//*till end of game!
+			gui.consoleWrite("Player: " + playerScore + " | Computer: " + aiScore);
+			if(playerTurn){	//process players turn
+				System.out.println("Player Turn");
+				//gui.consoleWrite("Players turn...");
+				Move m = gui.getUserInput();
+				while(m == null){	//keep waiting for move until we get one
+					Thread.sleep(100);		//**sleep to avoid concurrency issues - fix this with locking!
+					m = gui.getUserInput();
+					//System.out.print();
+				}
+				System.out.println("Got user move");
+				gui.resetUserMove();
+				//reset move to null so we don't accidentally get the same move twice
+				m.printMove();
+				Move m_comp = board.completeUserMove(m);	//*currently need to pass isMoveValid() complete and incomplete play - have bool/delim in play to identify if it already exists on the board
+				//m_comp.printMove();
+				System.out.println("Completed user move");
+				if(board.isMoveValid(m, g.getRoot(), m_comp)){	//if the move is valid - play it
+					System.out.println("Valid user move");
+					String word = new String();
+					for(Play p : m_comp)	//get the word as a string
+						word = word + p.letter;
+					
+					int score = board.calculateScore(m_comp);	//move score
+					playerScore += score;				//add to player score
+					System.out.println("Played: " + word + " | Score: " + score);
+					board.placeMove(m_comp);			//place move on the board - print via board.print
+					board.print();
+					board.computeAnchors();				//*shouldn't have to recompute all anchors and cross sets, just ones that are effected by last move
+					board.computeCrossSets(board, g.getRoot());
+					playerTurn = false;		//set to computers turn
+					human.rack.removeAll(word.toCharArray());
+					l.fillRack(human.rack);
+					gui.refreshRack(human.rack.myRack);
+					gui.addToBoard(m);
+				}
+				else {	//else if move is invalid - try again
+					System.out.println("Invalid user move - try again");
+					gui.resetBoard();
+					gui.resetUserMove();
+				}
+			}
+			else {	////process AI turn
+				System.out.println("Computer Turn");
+				ArrayList<Tile> rack = new ArrayList<Tile>();		//**convert rack - fix this
+				for(Character c : ai.rack.myRack){
+					if(c != '_')
+						rack.add(Tile.valueOf(c));
+				}
+				List<Move> moves = g.findWords(g.getRoot(), rack, board);		//find words
+				
+				if(moves.isEmpty())
+					return;
+				
+				int max = 0;
+				Move move_max = new Move();								//get highest
+				for(Move m: moves){
+					int score = board.calculateScore(m);
+					if(score > max){
+						max = score;
+						move_max = m;
+					}
+				}
+				
+				System.out.println("Best move score: " + max);
+				if(move_max.bingo)
+					System.out.println("BINGO!");
+				String word = new String();
+				for(Play p : move_max){
+					word = word + p.letter;
+					//System.out.println("Tile: " + p.letter + " | X: " + p.x + " |Y: " + p.y);
+				}
+				aiScore += max;
+				board.placeMove(move_max);
+				board.computeAnchors();
+				board.computeCrossSets(board, g.getRoot());
+				gui.addToBoard(move_max);
+				ai.rack.removeAll(word.toCharArray());
+				l.fillRack(ai.rack);
+				playerTurn = true; //false
+			}
+		}
+		
+		System.out.println("GAME OVER\nPlayer: " + playerScore + " Computer: " + aiScore);
 		
 	}
 	
 	public static void testGame() throws InterruptedException {
 		//set up game objects and initialize board
-		boolean playerTurn = true;
+		boolean playerTurn = false;//true
 		int playerScore = 0;
 		int aiScore = 0;
+		long before = Runtime.getRuntime().freeMemory();
 		GADDAG g = new GADDAG();
+		long after = Runtime.getRuntime().freeMemory();
+		System.out.println("Memory Diff: " + (before - after)/(1024.0*1024.0));
 		GUI gui = new GUI();
 		Board board = new Board();
 		board.computeAnchors();
@@ -168,6 +313,7 @@ public class Main {
 		ai.rack.print();
 		
 		while(l.hasLetters() || (human.rack.myRack.length > 0 && ai.rack.myRack.length > 0)){	//*till end of game!
+			gui.consoleWrite("Player: " + playerScore + " | Computer: " + aiScore);
 			if(playerTurn){	//process players turn
 				System.out.println("Player Turn");
 				//gui.consoleWrite("Players turn...");
@@ -219,6 +365,9 @@ public class Main {
 				}
 				List<Move> moves = g.findWords(g.getRoot(), rack, board);		//find words
 				
+				if(moves.isEmpty())
+					return;
+				
 				int max = 0;
 				Move move_max = new Move();								//get highest
 				for(Move m: moves){
@@ -228,27 +377,64 @@ public class Main {
 						move_max = m;
 					}
 				}
+				
+				File originalFile = new File("text/scoreCount.txt");
+				Scanner scan;
+				try {
+					scan = new Scanner(originalFile);
+					int score = Integer.parseInt(scan.nextLine()) + max;
+					int count = Integer.parseInt(scan.nextLine()) + 1;	
+					
+					File tempFile = new File("tempfile2.txt");
+			        PrintWriter pw = new PrintWriter(new FileWriter(tempFile));
+			        
+			        pw.println(score);
+			        pw.flush();
+			        pw.println(count);
+			        pw.flush();
+			        pw.close();
+			        
+			        // Delete the original file
+			        if (!originalFile.delete()) 
+			            System.out.println("Could not delete file");
+			        
+			        // Rename the new file to the filename the original file had.
+			        if (!tempFile.renameTo(originalFile))
+			            System.out.println("Could not rename file");
+				} catch (FileNotFoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
 				System.out.println("Best move score: " + max);
+				if(move_max.bingo)
+					System.out.println("BINGO!");
 				String word = new String();
 				for(Play p : move_max){
 					word = word + p.letter;
 					//System.out.println("Tile: " + p.letter + " | X: " + p.x + " |Y: " + p.y);
 				}
-				
+				aiScore += max;
 				board.placeMove(move_max);
 				board.computeAnchors();
 				board.computeCrossSets(board, g.getRoot());
 				gui.addToBoard(move_max);
 				ai.rack.removeAll(word.toCharArray());
 				l.fillRack(ai.rack);
-				playerTurn = true;
+				playerTurn = true; //false
 			}
 		}
 		
 		System.out.println("GAME OVER\nPlayer: " + playerScore + " Computer: " + aiScore);
 		
 	}
+	/*
+*/
 	
+/*	
 	public static void testGetUserInput(){
 		GADDAG gad = new GADDAG();
 		Board board = new Board();
@@ -492,4 +678,5 @@ public class Main {
 		board.print();
 		board.printAnchors();
 	}
+	*/
 }
